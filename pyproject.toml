@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fixrabies"
+version = "0.1.0"
+description = "ICA-FIX workflow for rodent fMRI"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "pyfix @ git+https://github.com/grandjeanlab/pyfix.git",
+    "pandas",
+    "nilearn",
+    "nipype",
+    "click",
+    "pyyaml"
+]
+
+[project.optional-dependencies]
+gui = [
+    "PySide6",
+]
+
+patch = [
+    "patch-denoise @ git+https://github.com/paquiteau/patch-denoising.git"
+]
+
+dev = [
+    "pytest",
+    "ruff",
+    "black",
+]
+
+[project.scripts]
+fixrabies = "fixrabies.cli:main"
