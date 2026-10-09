@@ -1,13 +1,13 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixrabies"
 version = "0.1.0"
 description = "ICA-FIX workflow for rodent fMRI"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 dependencies = [
     "pyfix @ git+https://github.com/grandjeanlab/pyfix.git",
@@ -31,7 +31,11 @@ dev = [
     "pytest",
     "ruff",
     "black",
+    "debugpy",
 ]
 
 [project.scripts]
 fixrabies = "fixrabies.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
