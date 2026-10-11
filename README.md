@@ -23,6 +23,13 @@ This is an opinonated pipeline, loosely based on [Zerbi et al. 2025](https://pub
 pip intall .
 ```
 
+### Nix development shell
+```{bash}
+nix develop
+```
+
+This provides Python 3.14, uv, and GCC.
+
 ### GUI support (for "label" and "report" viewing)
 ```{bash}
 pip install .[gui]
@@ -118,6 +125,5 @@ fixrabies analyze \
   -fix_dir /path/to/fix/dir \
   -DR_template /path/to/atlas.nii.gz
 ```
-
 
 
