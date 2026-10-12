@@ -178,20 +178,10 @@ Example:
     "method": "optimal-fro"
 }'
 
-Supported methods:
+Methods requiring a noise mask 
+are not yet implemented. 
 
-mp-pca
-hybrid-pca
-optimal-fro
-optimal-fro-noise
-optimal-nuc
-optimal-ope
-adaptive-qut
-
-Methods requiring a noise mask
-are not yet implemented.
-
-CPU execution only.
+CPU execution only. 
 """,
     )
 
@@ -497,33 +487,8 @@ def build_parser():
         prog="fixrabies",
         formatter_class=FixFormatter,
         description="""
-FixRABIES
-
-Rodent ICA-FIX workflow.
-
-Commands
---------
-
-prepare
-    Build a FixRABIES dataset.
-
-label
-    Label ICA components.
-
-train
-    Train a FIX classifier.
-
-classify
-    Apply a FIX classifier.
-
-review
-    Review FIX classification.
-
-cleanup
-    Apply FIX cleanup.
-
-analyze
-    Connectivity analyses.
+FixRABIES, a modern workflow 
+to  implement FIX in rodents.
 """,
     )
 
