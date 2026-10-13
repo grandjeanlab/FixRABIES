@@ -23,13 +23,6 @@ This is an opinonated pipeline, loosely based on [Zerbi et al. 2025](https://pub
 pip intall .
 ```
 
-### Nix development shell
-```{bash}
-nix develop
-```
-
-This provides Python 3.14, uv, and GCC.
-
 ### GUI support (for "label" and "report" viewing)
 ```{bash}
 pip install .[gui]
@@ -38,6 +31,26 @@ pip install .[gui]
 ### Patch denoissing support (for "prepare")
 ```{bash}
 pip install .[patch]
+```
+
+## Development
+
+### Nix development shell
+```{bash}
+nix develop . -c nu
+```
+This provides Python 3.14, uv, and GCC.
+
+### uv development
+```{bash}
+#create a virtual environement
+uv venv --python 3.14 .venv
+
+#get dependencies
+uv sync --dev
+
+#run the cli
+uv run fixrabies -h 
 ```
 
 ## Workflows
@@ -70,21 +83,21 @@ pip install FixRABIES[gui]
 
 Calls a PySide graphical interface to label noise component for training. 
 
-Graphical concept.
+Graphical concept.   
 
-+------------------------------------------------+
-| Subject - Component 17                         |
-+----------------------+-------------------------+
-| Spatial Map          | Power Spectrum          |
-|                      |                         |
-|                      |                         |
-+----------------------+-------------------------+
-| Time                                           |
-+------------------------------------------------+
-| [Artifact] [Signal] [Unsure]                   |
-+------------------------------------------------+
-| Prev | Next | Save                             |
-+------------------------------------------------+
++------------------------------------------------+   
+| Subject - Component 17                         |   
++----------------------+-------------------------+   
+| Spatial Map          | Power Spectrum          |   
+|                      |                         |   
+|                      |                         |   
++----------------------+-------------------------+   
+| Time                                           |   
++------------------------------------------------+   
+| [Artifact] [Signal] [Unsure]                   |   
++------------------------------------------------+   
+| Prev | Next | Save                             |   
++------------------------------------------------+   
 
 ### train
 ```{bash}
