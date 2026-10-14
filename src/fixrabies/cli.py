@@ -5,7 +5,51 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import logging
 
+# ==============================================================================
+# Logging
+# ==============================================================================
+
+import logging
+from pathlib import Path
+
+
+def setup_logging(command: str, fix_dir: Path, level: str):
+
+    log_dir = fix_dir / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    root = logging.getLogger()
+    root.handlers.clear()
+
+    root.setLevel(getattr(logging, level.upper()))
+
+    formatter = logging.Formatter(
+        "%(asctime)s "
+        "[%(levelname)s] "
+        "%(name)s: "
+        "%(message)s"
+    )
+
+    # console output
+    console = logging.StreamHandler()
+    console.setFormatter(formatter)
+    root.addHandler(console)
+
+    # global log
+    global_file = logging.FileHandler(
+        log_dir / "fixrabies.log"
+    )
+    global_file.setFormatter(formatter)
+    root.addHandler(global_file)
+
+    # command-specific log
+    command_file = logging.FileHandler(
+        log_dir / f"{command}.log"
+    )
+    command_file.setFormatter(formatter)
+    root.addHandler(command_file)
 
 # ==============================================================================
 # Formatter
@@ -77,6 +121,19 @@ FixRABIES working directory.
 All outputs, models, logs and reports will
 be saved below this directory.
 """,
+    )
+
+    common.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=[
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL",
+        ],
+        help="Logging verbosity."
     )
 
     return common
@@ -516,9 +573,14 @@ to  implement FIX in rodents.
 def main():
 
     parser = build_parser()
-
     args = parser.parse_args()
 
+    setup_logging(
+        command=args.command,
+        fix_dir=args.fix_dir,
+        level=args.log_level,
+    )
+    
     args.func(args)
 
 

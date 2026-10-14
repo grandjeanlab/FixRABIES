@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger("fixrabies.classify")
+
 def run_classify(args):
     print(
         f"Classifying with model {args.fix_model} "
