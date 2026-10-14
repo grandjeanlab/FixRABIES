@@ -21,7 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 patch = [
-    "patch-denoise @ git+https://github.com/paquiteau/patch-denoising.git"
+    "patch-denoise"
 ]
 
 dev = [
