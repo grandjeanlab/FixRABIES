@@ -47,7 +47,7 @@ This provides Python 3.14, uv, and GCC.
 uv venv --python 3.14 .venv
 
 #get dependencies
-uv sync --dev
+uv sync --dev --all-extras
 
 #run the cli
 uv run fixrabies -h 
