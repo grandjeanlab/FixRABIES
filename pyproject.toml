@@ -15,14 +15,11 @@ dependencies = [
     "nilearn",
     "nipype",
     "click",
-    "pyyaml"
+    "pyyaml", 
+    "pyside6"
 ]
 
 [project.optional-dependencies]
-gui = [
-    "PySide6",
-]
-
 patch = [
     "patch-denoise @ git+https://github.com/paquiteau/patch-denoising.git"
 ]
