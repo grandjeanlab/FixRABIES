@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -521,6 +521,7 @@ dependencies = [
     { name = "nipype" },
     { name = "pandas" },
     { name = "pyfix" },
+    { name = "pyside6" },
     { name = "pyyaml" },
 ]
 
@@ -530,9 +531,6 @@ dev = [
     { name = "debugpy" },
     { name = "pytest" },
     { name = "ruff" },
-]
-gui = [
-    { name = "pyside6" },
 ]
 patch = [
     { name = "patch-denoise" },
@@ -548,12 +546,12 @@ requires-dist = [
     { name = "pandas" },
     { name = "patch-denoise", marker = "extra == 'patch'", git = "https://github.com/paquiteau/patch-denoising.git" },
     { name = "pyfix", git = "https://github.com/grandjeanlab/pyfix.git" },
-    { name = "pyside6", marker = "extra == 'gui'" },
+    { name = "pyside6" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pyyaml" },
     { name = "ruff", marker = "extra == 'dev'" },
 ]
-provides-extras = ["gui", "patch", "dev"]
+provides-extras = ["patch", "dev"]
 
 [[package]]
 name = "fonttools"
@@ -1426,8 +1424,8 @@ wheels = [
 
 [[package]]
 name = "patch-denoise"
-version = "2.2.0"
-source = { git = "https://github.com/paquiteau/patch-denoising.git#34355d8d6bba17843d366444489fe7a58ac8b59c" }
+version = "2.3.0"
+source = { git = "https://github.com/paquiteau/patch-denoising.git#aa226f5431773f7e237c095bd05f18e893ce22fa" }
 dependencies = [
     { name = "cyclopts" },
     { name = "nilearn", extra = ["plotting"] },
