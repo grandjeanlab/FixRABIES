@@ -544,7 +544,7 @@ requires-dist = [
     { name = "nilearn" },
     { name = "nipype" },
     { name = "pandas" },
-    { name = "patch-denoise", marker = "extra == 'patch'", git = "https://github.com/paquiteau/patch-denoising.git" },
+    { name = "patch-denoise", marker = "extra == 'patch'" },
     { name = "pyfix", git = "https://github.com/grandjeanlab/pyfix.git" },
     { name = "pyside6" },
     { name = "pytest", marker = "extra == 'dev'" },
@@ -1425,11 +1425,15 @@ wheels = [
 [[package]]
 name = "patch-denoise"
 version = "2.3.0"
-source = { git = "https://github.com/paquiteau/patch-denoising.git#aa226f5431773f7e237c095bd05f18e893ce22fa" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cyclopts" },
     { name = "nilearn", extra = ["plotting"] },
     { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/23/8d/1c962e3cd0e8a80a3d7326dbdb50aa39514fe3818a367692e37e83f269c1/patch_denoise-2.3.0.tar.gz", hash = "sha256:135874dc9a8892dc8cf3761ba0ef672170ad826c874c5114b2dafc23313d483d", size = 75738, upload-time = "2026-10-12T14:40:59.111Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a7/d1/a69b4b064ed594108b12bb99929e6b906249a9a1b0a01cb3c541a0a03376/patch_denoise-2.3.0-py3-none-any.whl", hash = "sha256:0b179de5821c513e655cb2746ff5bc91ba7f5ea6dc3904e81055f80cc09df2d2", size = 59377, upload-time = "2026-10-12T14:40:58.089Z" },
 ]
 
 [[package]]
