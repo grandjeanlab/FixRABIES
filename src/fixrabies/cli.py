@@ -89,12 +89,12 @@ def run_classify_command(args):
 
 def run_review_command(args):
     from fixrabies.review import run_review
-    run_report(args)
+    run_review(args)
 
 
 def run_cleanup_command(args):
     from fixrabies.cleanup import run_cleanup
-    run_report(args)
+    run_cleanup(args)
 
 
 def run_analyze_command(args):
@@ -124,7 +124,7 @@ be saved below this directory.
     )
 
     common.add_argument(
-        "--log-level",
+        "-log-level",
         default="INFO",
         choices=[
             "DEBUG",
@@ -255,7 +255,7 @@ def add_label_parser(subparsers, common):
         "label",
         parents=[common],
         formatter_class=FixFormatter,
-        help="Label ICA components.",
+        help="Label ICA components for training.",
     )
 
     label = parser.add_argument_group("Label selection")
@@ -271,6 +271,7 @@ Percentage of scans to include.
 100 = all scans
 
 0 = randomly choose one scan
+not recommended. for testing. 
 
 Default = 20
 """,
@@ -382,6 +383,31 @@ def add_cleanup_parser(subparsers, common):
         help="Apply a FIX denoising.",
     )
 
+    req = parser.add_argument_group("Required arguments")
+
+    req.add_argument(
+        "-fix_model",
+        required=True,
+        metavar="MODEL",
+        help="""
+FIX model used for classification.
+If classify hasn't been run with the model used, 
+will return an error
+""",
+    )
+
+    req.add_argument(
+        "-threshold",
+        type=float,
+        default=20,
+        metavar="VALUE",
+        help="""
+FIX threshold used for classification
+If classify hasn't been run with the threshold used, 
+will return an error
+""",
+    )
+
     cleanup = parser.add_argument_group("Cleanup arguments")
 
 
@@ -474,6 +500,20 @@ a species-specific atlas is used.
         action=argparse.BooleanOptionalAction,
         default=True,
         help="Apply variance normalization.",
+    )
+
+    dr.add_argument(
+        "--dice_threshold",
+        metavar=float,
+        default="90",
+        help="Dice overlap threshold",
+    )
+
+    dr.add_argument(
+        "--extract_threshold",
+        metavar="STRING",
+        default="15z",
+        help="DR extraction threshold",
     )
 
     seed = parser.add_argument_group(
