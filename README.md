@@ -1,5 +1,5 @@
 
-FixRABIES is an alternative confound correction model implementing ICA-FIX workflor for rodent fMRI datasets preprocessed with RABIES (and potentially other workflows). 
+FixRABIES is an alternative confound correction model implementing ICA-FIX workflow for rodent fMRI datasets preprocessed with RABIES (and potentially other preprocessing pipelines). 
 
 This is an opinonated pipeline, loosely based on [Zerbi et al. 2025](https://pubmed.ncbi.nlm.nih.gov/26296501/). 
 
@@ -31,7 +31,6 @@ pip install .[patch]
 ```
 
 ## Development
-
 ### Nix development shell
 ```{bash}
 nix develop . -c nu
@@ -56,7 +55,7 @@ FixRABIES directory sturcture
 ├── data
 │   ├── sub-...
 │   └── sub-...
-├── model
+├── models
 │   ├── custom_model.pyfix_model
 │   └── label_select.csv
 ├── confound_correction
@@ -65,6 +64,9 @@ FixRABIES directory sturcture
 ├── analysis
 │   ├── sub-...
 │   └── sub-...
+├── workflows
+│   ├── prepare
+│   └── ...
 └── log
     ├── prepare.log
     └── ...
@@ -137,6 +139,7 @@ Tasks:
 - Extract motion parameters
 - Run optional patch-denoising
 - Build FIX directory structure
+- Run melodic
 
 ### label
 ```{bash}
@@ -148,7 +151,7 @@ fixrabies label \
 Calls a PySide graphical interface to label noise component for training. 
 
 Graphical concept.   
-
+```{text}
 +------------------------------------------------+   
 | Subject - Component 17                         |   
 +----------------------+-------------------------+   
@@ -162,6 +165,7 @@ Graphical concept.
 +------------------------------------------------+   
 | Prev | Next | Save                             |   
 +------------------------------------------------+   
+```
 
 ### train
 ```{bash}
@@ -170,7 +174,7 @@ fixrabies train \
   -fix_model my_model
 ```
 
-This will create /path/to/fix/dir/my_model
+This will create /path/to/fix/dir/models/my_model.pyfix_model
 
 ### classify
 ```{bash}
@@ -186,11 +190,11 @@ I plan to implement re-usable models in pyfix. currently only supports models tr
 fixrabies review \
   -fix_dir /path/to/fix/dir
 ```
-will open a GUI with all classified components and the possibility to manually fix it. 
+will open a GUI with all classified components and the possibility to manually correct them. same panel as in the train workflow 
 
-### apply
+### cleanup
 ```{bash}
-fixrabies apply \
+fixrabies cleanup \
   -fix_dir /path/to/fix/dir
 ```
 
