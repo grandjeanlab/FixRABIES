@@ -46,9 +46,7 @@ class ImageViewer(QMainWindow):
         subject_label = QLabel("Subject:")
         self.subject_combo = QComboBox()
         self.subject_combo.addItems(self.subjects)
-        self.subject_combo.currentIndexChanged.connect(
-            self.on_subject_changed
-        )
+        self.subject_combo.currentIndexChanged.connect(self.on_subject_changed)
 
         subject_layout.addWidget(subject_label)
         subject_layout.addWidget(self.subject_combo)
@@ -67,9 +65,7 @@ class ImageViewer(QMainWindow):
             label = QLabel("No image")
             label.setAlignment(Qt.AlignCenter)
             label.setMinimumSize(300, 300)
-            label.setStyleSheet(
-                "border: 1px solid gray; background:white;"
-            )
+            label.setStyleSheet("border: 1px solid gray; background:white;")
 
             self.image_labels.append(label)
             image_layout.addWidget(label)
@@ -85,15 +81,9 @@ class ImageViewer(QMainWindow):
         self.unsure_btn = QPushButton("Unsure")
         self.signal_btn = QPushButton("Signal")
 
-        self.noise_btn.clicked.connect(
-            lambda: self.record_rating("noise")
-        )
-        self.unsure_btn.clicked.connect(
-            lambda: self.record_rating("unsure")
-        )
-        self.signal_btn.clicked.connect(
-            lambda: self.record_rating("signal")
-        )
+        self.noise_btn.clicked.connect(lambda: self.record_rating("noise"))
+        self.unsure_btn.clicked.connect(lambda: self.record_rating("unsure"))
+        self.signal_btn.clicked.connect(lambda: self.record_rating("signal"))
 
         rating_layout.addWidget(self.noise_btn)
         rating_layout.addWidget(self.unsure_btn)
@@ -162,8 +152,7 @@ class ImageViewer(QMainWindow):
                 label.setText(f"Missing:\n{image_path}")
 
         self.status_label.setText(
-            f"Subject: {self.subjects[self.subject_idx]}   "
-            f"Index: {self.visit_idx}"
+            f"Subject: {self.subjects[self.subject_idx]}   " f"Index: {self.visit_idx}"
         )
 
     def on_subject_changed(self, idx):
@@ -174,11 +163,7 @@ class ImageViewer(QMainWindow):
     def record_rating(self, rating):
         subject = self.subjects[self.subject_idx]
 
-        print(
-            f"subject={subject}, "
-            f"index={self.visit_idx}, "
-            f"rating={rating}"
-        )
+        print(f"subject={subject}, " f"index={self.visit_idx}, " f"rating={rating}")
 
     def go_back(self):
         if self.visit_idx > 1:
