@@ -1,4 +1,4 @@
-from fixrabies.interfaces import prepare_rabies
+from fixrabies.interfaces.prepare_rabies import prepare_rabies
 
 
 def test_prepare_rabies():
