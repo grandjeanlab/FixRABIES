@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 def validate_scans(scans):
     """
     Validate that all files referenced in the scans dict exist.
