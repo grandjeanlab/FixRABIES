@@ -32,5 +32,3 @@ def validate_scans(scans):
             assert path.exists(), f"{scan_id}: '{key}' does not exist\n" f"  {path}"
 
     return True
-
-

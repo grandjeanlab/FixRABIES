@@ -10,7 +10,6 @@ from pathlib import Path
 # ==============================================================================
 
 
-
 def setup_logging(command: str, fix_dir: Path, level: str):
 
     log_dir = fix_dir / "logs"
@@ -51,7 +50,6 @@ class FixFormatter(
     argparse.RawTextHelpFormatter,
 ):
     """Custom argparse formatter."""
-
 
 
 # ==============================================================================

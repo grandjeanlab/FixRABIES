@@ -95,6 +95,7 @@ def prepare_rabies(preprocess_dir):
 
     return scans
 
+
 def get_tr(preprocess_dir):
     """
     Read TR from:
@@ -113,9 +114,7 @@ def get_tr(preprocess_dir):
 
     log_file = Path(preprocess_dir) / "rabies_preprocess.log"
 
-    assert log_file.exists(), (
-        f"Missing RABIES log file: {log_file}"
-    )
+    assert log_file.exists(), f"Missing RABIES log file: {log_file}"
 
     with open(log_file) as f:
         for line in f:
@@ -123,9 +122,8 @@ def get_tr(preprocess_dir):
             if match:
                 return float(match.group(1))
 
-    raise ValueError(
-        f"Could not find TR in {log_file}"
-    )
+    raise ValueError(f"Could not find TR in {log_file}")
+
 
 def validate_scans(scans):
     """
@@ -158,5 +156,3 @@ def validate_scans(scans):
             assert path.exists(), f"{scan_id}: '{key}' does not exist\n" f"  {path}"
 
     return True
-
-
