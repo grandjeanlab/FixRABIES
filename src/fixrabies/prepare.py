@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger("fixrabies.prepare")
 
+
 def run_prepare(args):
     logger.info("Starting prepare")
 

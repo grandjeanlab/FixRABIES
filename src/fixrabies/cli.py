@@ -1,18 +1,14 @@
-#!/usr/bin/env python3
-
 from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 import logging
+from pathlib import Path
 
 # ==============================================================================
 # Logging
 # ==============================================================================
 
-import logging
-from pathlib import Path
 
 
 def setup_logging(command: str, fix_dir: Path, level: str):
@@ -26,10 +22,7 @@ def setup_logging(command: str, fix_dir: Path, level: str):
     root.setLevel(getattr(logging, level.upper()))
 
     formatter = logging.Formatter(
-        "%(asctime)s "
-        "[%(levelname)s] "
-        "%(name)s: "
-        "%(message)s"
+        "%(asctime)s " "[%(levelname)s] " "%(name)s: " "%(message)s"
     )
 
     # console output
@@ -38,73 +31,80 @@ def setup_logging(command: str, fix_dir: Path, level: str):
     root.addHandler(console)
 
     # global log
-    global_file = logging.FileHandler(
-        log_dir / "fixrabies.log"
-    )
+    global_file = logging.FileHandler(log_dir / "fixrabies.log")
     global_file.setFormatter(formatter)
     root.addHandler(global_file)
 
     # command-specific log
-    command_file = logging.FileHandler(
-        log_dir / f"{command}.log"
-    )
+    command_file = logging.FileHandler(log_dir / f"{command}.log")
     command_file.setFormatter(formatter)
     root.addHandler(command_file)
+
 
 # ==============================================================================
 # Formatter
 # ==============================================================================
+
 
 class FixFormatter(
     argparse.ArgumentDefaultsHelpFormatter,
     argparse.RawTextHelpFormatter,
 ):
     """Custom argparse formatter."""
-    pass
+
 
 
 # ==============================================================================
 # Lazy command dispatchers
 # ==============================================================================
 
+
 def run_prepare_command(args):
     from fixrabies.prepare import run_prepare
+
     run_prepare(args)
 
 
 def run_label_command(args):
     from fixrabies.label import run_label
+
     run_label(args)
 
 
 def run_train_command(args):
     from fixrabies.train import run_train
+
     run_train(args)
 
 
 def run_classify_command(args):
     from fixrabies.classify import run_classify
+
     run_classify(args)
 
 
 def run_review_command(args):
     from fixrabies.review import run_review
+
     run_review(args)
 
 
 def run_cleanup_command(args):
     from fixrabies.cleanup import run_cleanup
+
     run_cleanup(args)
 
 
 def run_analyze_command(args):
     from fixrabies.analyze import run_analyze
+
     run_analyze(args)
 
 
 # ==============================================================================
 # Common arguments
 # ==============================================================================
+
 
 def build_common_parser():
 
@@ -133,7 +133,7 @@ be saved below this directory.
             "ERROR",
             "CRITICAL",
         ],
-        help="Logging verbosity."
+        help="Logging verbosity.",
     )
 
     return common
@@ -142,6 +142,7 @@ be saved below this directory.
 # ==============================================================================
 # Prepare
 # ==============================================================================
+
 
 def add_prepare_parser(subparsers, common):
 
@@ -211,9 +212,7 @@ TR from preprocessing outputs.
 """,
     )
 
-    patch = parser.add_argument_group(
-        "Patch denoising (requires [patch])"
-    )
+    patch = parser.add_argument_group("Patch denoising (requires [patch])")
 
     patch.add_argument(
         "-patch_denoise",
@@ -248,6 +247,7 @@ CPU execution only.
 # ==============================================================================
 # Label
 # ==============================================================================
+
 
 def add_label_parser(subparsers, common):
 
@@ -284,6 +284,7 @@ Default = 20
 # Train
 # ==============================================================================
 
+
 def add_train_parser(subparsers, common):
 
     parser = subparsers.add_parser(
@@ -314,6 +315,7 @@ Example:
 # ==============================================================================
 # Classify
 # ==============================================================================
+
 
 def add_classify_parser(subparsers, common):
 
@@ -359,6 +361,7 @@ Valid range:
 # Report
 # ==============================================================================
 
+
 def add_review_parser(subparsers, common):
 
     parser = subparsers.add_parser(
@@ -370,9 +373,11 @@ def add_review_parser(subparsers, common):
 
     parser.set_defaults(func=run_review_command)
 
+
 # ==============================================================================
 # Cleanup
 # ==============================================================================
+
 
 def add_cleanup_parser(subparsers, common):
 
@@ -409,7 +414,6 @@ will return an error
     )
 
     cleanup = parser.add_argument_group("Cleanup arguments")
-
 
     cleanup.add_argument(
         "-highpass",
@@ -470,6 +474,7 @@ applied after FIX cleanup.
 # Analyze
 # ==============================================================================
 
+
 def add_analyze_parser(subparsers, common):
 
     parser = subparsers.add_parser(
@@ -479,9 +484,7 @@ def add_analyze_parser(subparsers, common):
         help="Run connectivity analyses.",
     )
 
-    dr = parser.add_argument_group(
-        "Dual regression"
-    )
+    dr = parser.add_argument_group("Dual regression")
 
     dr.add_argument(
         "-DR_template",
@@ -516,9 +519,7 @@ a species-specific atlas is used.
         help="DR extraction threshold",
     )
 
-    seed = parser.add_argument_group(
-        "Seed analysis"
-    )
+    seed = parser.add_argument_group("Seed analysis")
 
     seed.add_argument(
         "-seed",
@@ -543,9 +544,7 @@ Example:
 """,
     )
 
-    nipype = parser.add_argument_group(
-        "Nipype execution"
-    )
+    nipype = parser.add_argument_group("Nipype execution")
 
     nipype.add_argument(
         "-nipype",
@@ -575,6 +574,7 @@ Example:
 # ==============================================================================
 # Parser builder
 # ==============================================================================
+
 
 def build_parser():
 
@@ -610,6 +610,7 @@ to  implement FIX in rodents.
 # Main entrypoint
 # ==============================================================================
 
+
 def main():
 
     parser = build_parser()
@@ -620,7 +621,7 @@ def main():
         fix_dir=args.fix_dir,
         level=args.log_level,
     )
-    
+
     args.func(args)
 
 
