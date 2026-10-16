@@ -20,12 +20,6 @@
             pkgs.python314Packages.pyside6
             pkgs.python314Packages.numpy
           ];
-
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [
-            stdenv.cc.cc.lib
-            zlib
-            glib
-          ]);
         };
     };
 }
