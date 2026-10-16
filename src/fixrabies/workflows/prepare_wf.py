@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 
 from nipype import Node, Workflow
@@ -6,8 +5,10 @@ from nipype.interfaces.utility import Function, IdentityInterface
 
 
 def prepare_fix_scan(scan_id, scan_info, fix_dir):
+    import shutil
     from pathlib import Path
 
+    import nibabel as nib
     import pandas as pd
 
     outdir = Path(fix_dir) / "data" / scan_id
@@ -64,10 +65,38 @@ def prepare_fix_scan(scan_id, scan_info, fix_dir):
         float_format="%.10f",
     )
 
+    # ----------------------------------------------------------
+    # highres2example_func.mat
+    # ----------------------------------------------------------
+
+    with open(
+        regdir / "highres2example_func.mat",
+        "w",
+        newline="\n",
+    ) as f:
+        f.write("1  0  0  0  \n" "0  1  0  0  \n" "0  0  1  0  \n" "0  0  0  1  \n")
+
+    # ----------------------------------------------------------
+    # design.fsf
+    # ----------------------------------------------------------
+
+    img = nib.load(scan_info["bold_file"])
+
+    npts = img.shape[3]
+
+    tr = scan_info["tr"]
+
+    with open(outdir / "design.fsf", "w") as f:
+        f.write(
+            f"set fmri(tr) {tr}\n" f"set fmri(npts) {npts}\n" "set fmri(temphp_yn) 0\n"
+        )
+
     return str(outdir)
+
 
 def get_scan_info(scan_id, scans):
     return scans[scan_id]
+
 
 def create_prepare_fix_workflow(scans, fix_dir):
 
@@ -78,9 +107,7 @@ def create_prepare_fix_workflow(scans, fix_dir):
         name="infosource",
     )
 
-    infosource.iterables = [
-        ("scan_id", scan_ids)
-    ]
+    infosource.iterables = [("scan_id", scan_ids)]
 
     lookup = Node(
         Function(
@@ -116,11 +143,8 @@ def create_prepare_fix_workflow(scans, fix_dir):
     prepare.inputs.fix_dir = str(fix_dir)
 
     wf = Workflow(
-    name="prepare",
-    base_dir=str(
-        Path(fix_dir)
-        / "workflows"
-    ),
+        name="prepare",
+        base_dir=str(Path(fix_dir) / "workflows"),
     )
 
     wf.connect(
