@@ -7,7 +7,8 @@ wf = create_prepare_fix_workflow(
     scans=scans,
     fix_dir="/home/gjoanes/test/fix",
     #make patch_denoise a dict with apply=True, method="optimal-fro"
-    patch_denoise={"apply": True, "method": "optimal-fro"},
+    patch_denoise={"apply": False, "method": "nordic"},
+    species="mouseDSURQE",
 )
 
 wf.run()

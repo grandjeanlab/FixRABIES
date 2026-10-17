@@ -62,6 +62,17 @@ def denoise_input_node(
     return node
 
 
+def noise_std_map_node():
+    node = Node(
+        NoiseStdMap(),
+        name="estimate_noise_std_map",
+    )
+
+    node.inputs.fft_scale = 100
+    node.inputs.block_size = 3
+
+    return node
+
 
 def denoise_tofile_node():
 
