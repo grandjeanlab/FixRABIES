@@ -92,3 +92,6 @@ def get_scan_info(scan_id, scans):
     return scans[scan_id]
 
 
+def get_bold_file(scan_info):
+    return scan_info["bold_file"]
+

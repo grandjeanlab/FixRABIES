@@ -1,6 +1,3 @@
-from pathlib import Path
-import shutil
-
 from nipype import Node
 from nipype.interfaces.utility import Function
 
@@ -18,6 +15,9 @@ def save_filtered_func_data(
     Save the denoised output into the
     FIX-compatible location.
     """
+
+    import shutil
+    from pathlib import Path
 
     output_file = (
         Path(scan_dir)
@@ -46,11 +46,11 @@ def denoise_input_node(
     )
 
     node.inputs.patch_shape = (
-        patch_denoise["patch_shape"]
+        patch_denoise.get("patch_shape", [11, 11, 11, -1])
     )
 
     node.inputs.patch_overlap = (
-        patch_denoise["patch_overlap"]
+        patch_denoise.get("patch_overlap", [5, 5, 5, -1])
     )
 
     node.inputs.mask_threshold = 1
@@ -78,4 +78,3 @@ def denoise_tofile_node():
         ),
         name="save_filtered_func",
     )
-
