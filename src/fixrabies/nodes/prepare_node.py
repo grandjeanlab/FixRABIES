@@ -1,4 +1,11 @@
-def prepare_fix_scan(scan_id, scan_info, fix_dir, patch_denoise):
+def prepare_fix_scan(
+    scan_id,
+    scan_info,
+    fix_dir,
+    patch_denoise,
+    species,
+):
+    from importlib.resources import as_file, files
     import shutil
     from pathlib import Path
 
@@ -17,11 +24,12 @@ def prepare_fix_scan(scan_id, scan_info, fix_dir, patch_denoise):
     # ------------------------------------------------------------------
     # Copy files
     # ------------------------------------------------------------------
-    if patch_denoise.get("apply", False):
-        shutil.copyfile(
-            scan_info["bold_file"],
-            outdir / "filtered_func_data.nii.gz",
-        )
+    filtered_func_data = outdir / "filtered_func_data.nii.gz"
+
+    shutil.copyfile(
+        scan_info["bold_file"],
+        filtered_func_data,
+    )
 
     shutil.copyfile(
         scan_info["fd"],
@@ -42,6 +50,19 @@ def prepare_fix_scan(scan_id, scan_info, fix_dir, patch_denoise):
         scan_info["highres"],
         regdir / "highres.nii.gz",
     )
+
+    template = (
+        files("fixrabies")
+        .joinpath("templates")
+        .joinpath(species)
+        .joinpath("highres_pveseg.nii.gz")
+    )
+
+    with as_file(template) as template_file:
+        shutil.copyfile(
+            template_file,
+            regdir / "highres_pveseg.nii.gz",
+        )
 
     # ------------------------------------------------------------------
     # Convert motion file
@@ -85,7 +106,7 @@ def prepare_fix_scan(scan_id, scan_info, fix_dir, patch_denoise):
             f"set fmri(tr) {tr}\n" f"set fmri(npts) {npts}\n" "set fmri(temphp_yn) 0\n"
         )
 
-    return str(outdir)
+    return str(outdir), str(filtered_func_data)
 
 
 def get_scan_info(scan_id, scans):
@@ -94,4 +115,3 @@ def get_scan_info(scan_id, scans):
 
 def get_bold_file(scan_info):
     return scan_info["bold_file"]
-
