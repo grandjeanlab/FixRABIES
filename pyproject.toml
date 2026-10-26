@@ -16,7 +16,7 @@ dependencies = [
     "nipype",
     "click",
     "pyyaml", 
-    "pyside6"
+    "pyside6<6.10"
 ]
 
 [project.optional-dependencies]
@@ -36,3 +36,8 @@ fixrabies = "fixrabies.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'"
+]
