@@ -1590,8 +1590,8 @@ wheels = [
 
 [[package]]
 name = "pyfix"
-version = "0.10.0"
-source = { git = "https://github.com/grandjeanlab/pyfix.git#4fd579aed58dbb4645e12ff6cddccc99e93d4329" }
+version = "0.10.1.dev3+g2728fad77"
+source = { git = "https://github.com/grandjeanlab/pyfix.git#2728fad77e6d0ff546c9a0a6a7ba5413d0d4ef8d" }
 dependencies = [
     { name = "cachetools" },
     { name = "file-tree" },
