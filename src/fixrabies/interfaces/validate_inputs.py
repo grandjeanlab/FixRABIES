@@ -1,3 +1,4 @@
+from importlib.resources import files
 from pathlib import Path
 
 
@@ -66,3 +67,71 @@ def validate_select_label(select_label):
         )
 
     return select_label
+
+
+def validate_training_set(fix_dir):
+    training_set_file = Path(fix_dir) / "model" / "training_set.txt"
+    if not training_set_file.is_file():
+        raise ValueError(
+            f"Training set file does not exist: {training_set_file}"
+        )
+
+    scan_list = [
+        line
+        for line in training_set_file.read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+    if not scan_list:
+        raise ValueError(f"Training set file is empty: {training_set_file}")
+
+    return scan_list
+
+
+def validate_training_scans(data_dir, scan_list):
+    data_dir = Path(data_dir).resolve()
+    validated_scans = []
+    for scan in scan_list:
+        scan_path = Path(scan)
+        expected_scan_path = data_dir / scan_path.name
+        if scan_path.is_absolute() and scan_path.resolve() != expected_scan_path:
+            raise ValueError(
+                f"Training scan is not in the data directory: {scan_path}"
+            )
+        if not expected_scan_path.is_dir():
+            raise ValueError(
+                f"Training scan does not exist: {expected_scan_path}"
+            )
+        validated_scans.append(str(expected_scan_path))
+
+    return validated_scans
+
+
+def validate_hand_label_files(scan_list):
+    missing_labels = [
+        str(Path(scan) / "hand_labels_noise.txt")
+        for scan in scan_list
+        if not (Path(scan) / "hand_labels_noise.txt").is_file()
+    ]
+    if missing_labels:
+        raise ValueError(
+            "Missing hand label files:\n" + "\n".join(missing_labels)
+        )
+
+    return scan_list
+
+
+def pyfix_model_exists(fix_model):
+    model_file = files("pyfix").joinpath(
+        "resources",
+        "models",
+        f"{fix_model}.pyfix_model",
+    )
+    return model_file.is_file()
+
+
+def validate_trained_model(fix_dir, fix_model):
+    model_file = Path(fix_dir) / "model" / f"{fix_model}.pyfix_model"
+    if not model_file.is_file():
+        raise ValueError(f"Trained model was not created: {model_file}")
+
+    return str(model_file)
