@@ -7,12 +7,16 @@ logger = logging.getLogger("fixrabies.cleanup")
 def run_cleanup(args):
     from fixrabies.interfaces.validate_inputs import (
         validate_classification_outputs,
+        validate_cleanup_files,
         validate_data_directory,
         validate_feature_files,
         validate_select_label,
         validate_trained_model,
     )
-    from fixrabies.workflows.cleanup_wf import create_cleanup_workflow
+    from fixrabies.workflows.cleanup_wf import (
+        create_cleanup_workflow,
+        create_post_cleanup_workflow,
+    )
 
     logger.info("Starting cleanup")
     logger.debug("Fix directory: %s", args.fix_dir)
@@ -42,5 +46,18 @@ def run_cleanup(args):
     nipype_args = args.nipype.copy()
     plugin = nipype_args.pop("plugin")
     workflow.run(plugin=plugin, plugin_args=nipype_args)
+    validate_cleanup_files(scan_list)
+
+    post_cleanup_workflow = create_post_cleanup_workflow(
+        fix_dir=args.fix_dir,
+        scan_list=scan_list,
+        dvars_threshold=args.DVARS_threshold,
+        fd_threshold=args.FD_threshold,
+        smooth=args.smooth,
+    )
+    post_cleanup_workflow.run(
+        plugin=plugin,
+        plugin_args=nipype_args,
+    )
 
     logger.info("Finished cleanup")

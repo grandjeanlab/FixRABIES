@@ -151,3 +151,22 @@ def validate_classification_outputs(scan_list, fix_model, threshold):
         )
 
     return scan_list
+
+
+def validate_cleanup_files(scan_list):
+    required_files = [
+        "filtered_func_data_clean.nii.gz",
+        "fd.csv",
+    ]
+    missing_files = [
+        str(Path(scan) / required_file)
+        for scan in scan_list
+        for required_file in required_files
+        if not (Path(scan) / required_file).is_file()
+    ]
+    if missing_files:
+        raise ValueError(
+            "Missing cleanup files:\n" + "\n".join(missing_files)
+        )
+
+    return scan_list
