@@ -135,3 +135,19 @@ def validate_trained_model(fix_dir, fix_model):
         raise ValueError(f"Trained model was not created: {model_file}")
 
     return str(model_file)
+
+
+def validate_classification_outputs(scan_list, fix_model, threshold):
+    artifact_filename = f"fix4melview_{fix_model}_thr{threshold}.txt"
+    missing_artifact_lists = [
+        str(Path(scan) / artifact_filename)
+        for scan in scan_list
+        if not (Path(scan) / artifact_filename).is_file()
+    ]
+    if missing_artifact_lists:
+        raise ValueError(
+            "Missing classification artifact lists:\n"
+            + "\n".join(missing_artifact_lists)
+        )
+
+    return scan_list
