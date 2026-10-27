@@ -35,6 +35,8 @@ def run_prepare(args):
         patch_denoise=args.patch_denoise,
         species=args.species,
     )
-    workflow.run()
+    nipype_args = args.nipype.copy()
+    plugin = nipype_args.pop("plugin")
+    workflow.run(plugin=plugin, plugin_args=nipype_args)
 
     logger.info("Finished prepare")
