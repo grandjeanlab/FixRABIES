@@ -25,7 +25,9 @@ from fixrabies.nodes.cleanup import (
     get_kept_volumes,
     save_exclusion_file,
 )
+from fixrabies.review import run_review
 from fixrabies.train import run_train
+from fixrabies.workflows.review_wf import get_review_scan_info
 from fixrabies.cleanup import run_cleanup
 
 
@@ -123,6 +125,49 @@ def test_validate_classification_outputs():
         "test_v1",
         20,
     ) == scan_list
+
+
+def test_get_review_scan_info_uses_classifier_artifact_lists():
+    fix_dir = Path("~/test").expanduser()
+    scan_list = sorted(
+        str(path)
+        for path in (fix_dir / "data").iterdir()
+        if path.is_dir()
+    )
+
+    scans = get_review_scan_info(scan_list, "test_v1", 20)
+
+    assert set(scans) == {Path(scan).name for scan in scan_list}
+    for scan in scans.values():
+        assert scan["noise_list"].endswith(
+            "fix4melview_test_v1_thr20.txt"
+        )
+        assert Path(scan["noise_list"]).is_file()
+        assert scan["n_ic"] > 0
+
+
+def test_run_review_creates_metadata_workflow():
+    fix_dir = Path("~/test").expanduser()
+    args = SimpleNamespace(
+        fix_dir=fix_dir,
+        fix_model="test_v1",
+        threshold=20,
+        nipype={"plugin": "Linear"},
+    )
+    with patch(
+        "fixrabies.workflows.review_wf.create_review_workflow"
+    ) as create_workflow:
+        run_review(args)
+
+    workflow_args = create_workflow.call_args.kwargs
+    assert workflow_args["fix_dir"] == fix_dir
+    assert workflow_args["scan_list"]
+    assert workflow_args["fix_model"] == "test_v1"
+    assert workflow_args["threshold"] == 20
+    create_workflow.return_value.run.assert_called_once_with(
+        plugin="Linear",
+        plugin_args={},
+    )
 
 
 def test_run_classify_creates_iterable_workflow():

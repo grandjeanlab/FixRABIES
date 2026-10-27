@@ -403,6 +403,23 @@ def add_review_parser(subparsers, common):
         help="Generate QC reports.",
     )
 
+    req = parser.add_argument_group("Required arguments")
+
+    req.add_argument(
+        "-fix_model",
+        required=True,
+        metavar="MODEL",
+        help="FIX model used for classification.",
+    )
+
+    req.add_argument(
+        "-threshold",
+        type=int,
+        default=20,
+        metavar="VALUE",
+        help="FIX threshold used for classification.",
+    )
+
     parser.set_defaults(func=run_review_command)
 
 
