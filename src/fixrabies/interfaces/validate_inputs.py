@@ -32,3 +32,37 @@ def validate_scans(scans):
             assert path.exists(), f"{scan_id}: '{key}' does not exist\n" f"  {path}"
 
     return True
+
+
+def validate_data_directory(fix_dir):
+    data_dir = Path(fix_dir) / "data"
+    if not data_dir.is_dir():
+        raise ValueError(f"Data directory does not exist: {data_dir}")
+
+    if not any(path.is_dir() for path in data_dir.iterdir()):
+        raise ValueError(f"Data directory contains no scan folders: {data_dir}")
+
+    return str(data_dir)
+
+
+def validate_feature_files(scan_list):
+    missing_features = [
+        str(Path(scan) / "fix" / "features.csv")
+        for scan in scan_list
+        if not (Path(scan) / "fix" / "features.csv").is_file()
+    ]
+    if missing_features:
+        raise ValueError(
+            "Missing FIX feature files:\n" + "\n".join(missing_features)
+        )
+
+    return scan_list
+
+
+def validate_select_label(select_label):
+    if not 0 <= select_label <= 100:
+        raise ValueError(
+            f"select_label must be between 0 and 100, got {select_label}"
+        )
+
+    return select_label
