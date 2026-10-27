@@ -41,3 +41,29 @@ class Training(CommandLine):
         outputs = self.output_spec().get()
         outputs["model_file"] = f"{self.inputs.model_stem}.pyfix_model"
         return outputs
+
+
+class CleanupInputSpec(CommandLineInputSpec):
+    artifact_list_file = File(
+        exists=True,
+        argstr="%s",
+        mandatory=True,
+        position=1,
+    )
+    motionhp = traits.Bool(
+        argstr="-m",
+        position=2,
+    )
+    highpass = traits.Float(
+        argstr="-h %s",
+        position=3,
+    )
+    aggressive = traits.Bool(
+        argstr="-A",
+        position=4,
+    )
+
+
+class Cleanup(CommandLine):
+    _cmd = "fix -a"
+    input_spec = CleanupInputSpec

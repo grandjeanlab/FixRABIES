@@ -435,7 +435,7 @@ will return an error
 
     req.add_argument(
         "-threshold",
-        type=float,
+        type=int,
         default=20,
         metavar="VALUE",
         help="""
@@ -446,6 +446,21 @@ will return an error
     )
 
     cleanup = parser.add_argument_group("Cleanup arguments")
+
+    cleanup.add_argument(
+        "-motionhp",
+        action="store_true",
+        help="Apply motion-parameter regression during FIX cleanup.",
+    )
+
+    cleanup.add_argument(
+        "-aggressive",
+        action="store_true",
+        help=(
+            "Apply aggressive (full variance) cleanup instead of the "
+            "default less-aggressive (unique variance) cleanup."
+        ),
+    )
 
     cleanup.add_argument(
         "-highpass",

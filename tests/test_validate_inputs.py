@@ -15,10 +15,13 @@ from fixrabies.interfaces.validate_inputs import (
     validate_training_scans,
     validate_training_set,
 )
+from fixrabies.interfaces.pyfix import Cleanup
 from fixrabies.classify import run_classify
 from fixrabies.label import get_matching_training_set
 from fixrabies.nodes.classify import classifier_node
+from fixrabies.nodes.cleanup import cleanup_node
 from fixrabies.train import run_train
+from fixrabies.cleanup import run_cleanup
 
 
 def test_validate_label_inputs():
@@ -148,4 +151,65 @@ def test_run_classify_creates_iterable_workflow():
         workflow_args["scan_list"],
         "test_v1",
         20,
+    )
+
+
+def test_cleanup_node_uses_requested_flags():
+    node = cleanup_node(
+        motionhp=True,
+        aggressive=True,
+        highpass=100,
+    )
+
+    assert node.interface.cmd == "fix -a"
+    assert node.inputs.motionhp is True
+    assert node.inputs.aggressive is True
+    assert node.inputs.highpass == 100
+
+
+def test_cleanup_interface_command():
+    artifact_list_file = next(
+        Path("~/test/data").expanduser().glob(
+            "*/fix4melview_test_v1_thr20.txt"
+        )
+    )
+    cleanup = Cleanup(
+        artifact_list_file=str(artifact_list_file),
+        motionhp=True,
+        aggressive=True,
+        highpass=100,
+    )
+
+    assert cleanup.cmdline == (
+        f"fix -a {artifact_list_file} -m -h 100.0 -A"
+    )
+
+
+def test_run_cleanup_creates_iterable_workflow():
+    fix_dir = Path("~/test").expanduser()
+    args = SimpleNamespace(
+        fix_dir=fix_dir,
+        fix_model="test_v1",
+        threshold=20,
+        motionhp=True,
+        aggressive=True,
+        highpass=100,
+        nipype={"plugin": "Linear"},
+    )
+    with patch(
+        "fixrabies.workflows.cleanup_wf.create_cleanup_workflow"
+    ) as create_workflow:
+        run_cleanup(args)
+
+    workflow_args = create_workflow.call_args.kwargs
+    assert workflow_args["fix_dir"] == fix_dir
+    assert workflow_args["scan_list"]
+    assert workflow_args["fix_model"] == "test_v1"
+    assert workflow_args["threshold"] == 20
+    assert workflow_args["motionhp"] is True
+    assert workflow_args["aggressive"] is True
+    assert workflow_args["highpass"] == 100
+    create_workflow.return_value.run.assert_called_once_with(
+        plugin="Linear",
+        plugin_args={},
     )
