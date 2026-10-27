@@ -328,6 +328,17 @@ Example:
 """,
     )
 
+    parser.add_argument(
+        "-species",
+        default="mouseDSURQE",
+        choices=[
+            "mouseDSURQE",
+            "mouseAIBS",
+            "ratSIGMA",
+        ],
+        help="Species/template space used to extract FIX features.",
+    )
+
     parser.set_defaults(func=run_train_command)
 
 
