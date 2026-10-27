@@ -5,8 +5,8 @@ This is an opinonated pipeline, loosely based on [Zerbi et al. 2025](https://pub
 
 ## Package roadmap. 
 - Dataset preparation for Fix (done)
-- Manual ICA labeling with GUI
-- FIX classifier training 
+- Manual ICA labeling with GUI (work in progress)
+- FIX classifier training (done)
 - FIX classification
 - classification review
 - FIX denosing
