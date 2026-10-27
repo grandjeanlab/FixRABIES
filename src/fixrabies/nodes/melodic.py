@@ -24,15 +24,15 @@ def get_melodic_metadata(scan_info):
 def get_melodic_out_dir(scan_dir):
     from pathlib import Path
 
-    return str(Path(scan_dir) / "filtered_func_data")
+    return str(Path(scan_dir) / "filtered_func_data.ica")
 
 
 def write_hand_labels_noise(melodic_out_dir, scan_dir):
     import warnings
     from pathlib import Path
 
-    melodic_dir = Path(f"{melodic_out_dir}.ica")
-    stats_file = melodic_dir / "melodic_ICstats"
+    melodic_out_dir = Path(melodic_out_dir)
+    stats_file = melodic_out_dir / "melodic_ICstats"
 
     with open(stats_file) as f:
         component_count = sum(1 for _ in f)
