@@ -375,7 +375,7 @@ my_custom_model
 
     req.add_argument(
         "-threshold",
-        type=float,
+        type=int,
         default=20,
         metavar="VALUE",
         help="""
@@ -385,6 +385,8 @@ Valid range:
 0 - 100
 """,
     )
+
+    parser.set_defaults(func=run_classify_command)
 
 
 # ==============================================================================
