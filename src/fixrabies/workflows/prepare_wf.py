@@ -16,6 +16,11 @@ from fixrabies.nodes.melodic import (
     melodic_node,
 )
 
+
+def wait_for_melodic(melodic_out_dir, mel_ica):
+    return mel_ica
+
+
 def create_prepare_fix_workflow(
     scans,
     fix_dir,
@@ -112,8 +117,24 @@ def create_prepare_fix_workflow(
 
     melodic = melodic_node()
     hand_labels_noise = hand_labels_noise_node()
+    melodic_complete = Node(
+        Function(
+            input_names=[
+                "melodic_out_dir",
+                "mel_ica",
+            ],
+            output_names=[
+                "mel_ica",
+            ],
+            function=wait_for_melodic,
+        ),
+        name="melodic_complete",
+    )
     feature_extractor = Node(
-        FeatureExtractor(command='fix'),
+        FeatureExtractor(
+            command="fix",
+            args=f"-s {species}",
+        ),
         name="feature_extractor",
     )
 
@@ -193,8 +214,22 @@ def create_prepare_fix_workflow(
     )
 
     wf.connect(
+        melodic,
+        "out_dir",
+        melodic_complete,
+        "melodic_out_dir",
+    )
+
+    wf.connect(
         prepare,
         "outdir",
+        melodic_complete,
+        "mel_ica",
+    )
+
+    wf.connect(
+        melodic_complete,
+        "mel_ica",
         feature_extractor,
         "mel_ica",
     )
