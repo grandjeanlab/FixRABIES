@@ -4,7 +4,7 @@ FixRABIES is an alternative confound correction model implementing ICA-FIX workf
 This is an opinonated pipeline, loosely based on [Zerbi et al. 2025](https://pubmed.ncbi.nlm.nih.gov/26296501/). 
 
 ## Package roadmap. 
-- Dataset preparation for Fix
+- Dataset preparation for Fix (done)
 - Manual ICA labeling with GUI
 - FIX classifier training 
 - FIX classification
