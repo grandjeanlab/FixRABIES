@@ -11,6 +11,7 @@ def prepare_fix_scan(
 
     import nibabel as nib
     import pandas as pd
+    from nilearn.image import resample_to_img
 
     outdir = Path(fix_dir) / "data" / scan_id
 
@@ -59,10 +60,25 @@ def prepare_fix_scan(
     )
 
     with as_file(template) as template_file:
-        shutil.copyfile(
+        resample_to_img(
             template_file,
-            regdir / "highres_pveseg.nii.gz",
-        )
+            outdir / "bg.nii.gz",
+            interpolation="nearest",
+        ).to_filename(regdir / "highres_pveseg.nii.gz")
+
+    template = (
+        files("fixrabies")
+        .joinpath("templates")
+        .joinpath(species)
+        .joinpath("ica.nii.gz")
+    )
+
+    with as_file(template) as template_file:
+        resample_to_img(
+            template_file,
+            outdir / "bg.nii.gz",
+            interpolation="nearest",
+        ).to_filename(regdir / "ica.nii.gz")
 
     # ------------------------------------------------------------------
     # Convert motion file
