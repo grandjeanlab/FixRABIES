@@ -122,6 +122,27 @@ be saved below this directory.
     )
 
     common.add_argument(
+        "-nipype",
+        type=json.loads,
+        metavar="JSON",
+        default={
+            "plugin": "MultiProc",
+        },
+        help="""
+Nipype execution settings.
+
+Example:
+
+-nipype '{
+    "plugin": "MultiProc",
+    "n_procs": 4,
+    "memory_gb": 16
+}'
+""",
+    )
+
+
+    common.add_argument(
         "-log-level",
         default="INFO",
         choices=[
@@ -162,7 +183,7 @@ creates a FixRABIES working directory.
 
     req.add_argument(
         "-species",
-        required=True,
+        default="mouseDSURQE",
         choices=[
             "mouseDSURQE",
             "mouseAIBS",
@@ -538,30 +559,6 @@ Example:
         "/path/to/acc.nii.gz",
         "/path/to/thalamus.nii.gz"
     ]
-}'
-""",
-    )
-
-    nipype = parser.add_argument_group("Nipype execution")
-
-    nipype.add_argument(
-        "-nipype",
-        type=json.loads,
-        metavar="JSON",
-        default={
-            "plugin": "MultiProc",
-            "n_procs": -1,
-            "memory_gb": -1,
-        },
-        help="""
-Nipype execution settings.
-
-Example:
-
--nipype '{
-    "plugin": "MultiProc",
-    "n_procs": 4,
-    "memory_gb": 16
 }'
 """,
     )
