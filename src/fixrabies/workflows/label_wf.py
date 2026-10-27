@@ -62,29 +62,12 @@ def get_selected_scan_info(scan_list):
     return scans
 
 
-def create_label_workflow(fix_dir, scan_list, select_label):
-    model_directory = Node(
-        Function(
-            input_names=["fix_dir", "scan_list"],
-            output_names=["model_dir"],
-            function=create_model_directory,
-        ),
-        name="model_directory",
-    )
-    model_directory.inputs.fix_dir = str(fix_dir)
-    model_directory.inputs.scan_list = scan_list
-
-    select_scans = Node(
-        Function(
-            input_names=["scan_list", "select_label", "model_dir"],
-            output_names=["selected_scans"],
-            function=select_training_scans,
-        ),
-        name="select_scans",
-    )
-    select_scans.inputs.scan_list = scan_list
-    select_scans.inputs.select_label = select_label
-
+def create_label_workflow(
+    fix_dir,
+    scan_list,
+    select_label,
+    selected_scans=None,
+):
     selected_scan_info = Node(
         Function(
             input_names=["scan_list"],
@@ -98,17 +81,43 @@ def create_label_workflow(fix_dir, scan_list, select_label):
         name="label",
         base_dir=str(Path(fix_dir) / "workflows"),
     )
-    workflow.connect(
-        model_directory,
-        "model_dir",
-        select_scans,
-        "model_dir",
-    )
-    workflow.connect(
-        select_scans,
-        "selected_scans",
-        selected_scan_info,
-        "scan_list",
-    )
+    if selected_scans is not None:
+        selected_scan_info.inputs.scan_list = selected_scans
+        workflow.add_nodes([selected_scan_info])
+    else:
+        model_directory = Node(
+            Function(
+                input_names=["fix_dir", "scan_list"],
+                output_names=["model_dir"],
+                function=create_model_directory,
+            ),
+            name="model_directory",
+        )
+        model_directory.inputs.fix_dir = str(fix_dir)
+        model_directory.inputs.scan_list = scan_list
+
+        select_scans = Node(
+            Function(
+                input_names=["scan_list", "select_label", "model_dir"],
+                output_names=["selected_scans"],
+                function=select_training_scans,
+            ),
+            name="select_scans",
+        )
+        select_scans.inputs.scan_list = scan_list
+        select_scans.inputs.select_label = select_label
+
+        workflow.connect(
+            model_directory,
+            "model_dir",
+            select_scans,
+            "model_dir",
+        )
+        workflow.connect(
+            select_scans,
+            "selected_scans",
+            selected_scan_info,
+            "scan_list",
+        )
 
     return workflow
