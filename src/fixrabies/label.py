@@ -63,6 +63,15 @@ def run_label(args):
     )
     nipype_args = args.nipype.copy()
     plugin = nipype_args.pop("plugin")
-    workflow.run(plugin=plugin, plugin_args=nipype_args)
+    execution_graph = workflow.run(plugin=plugin, plugin_args=nipype_args)
+    scan_info_node = next(
+        node
+        for node in execution_graph.nodes()
+        if node.name == "selected_scan_info"
+    )
+
+    from fixrabies.gui import launch_component_labeler
+
+    launch_component_labeler(scan_info_node.result.outputs.scans)
 
     logger.info("Finished label")
