@@ -11,14 +11,14 @@ def melodic_node():
 
     node.inputs.approach = "tica"
     node.inputs.no_bet = True
-    node.inputs.no_mask = True
+    node.inputs.no_mask = False
     node.inputs.report = True
 
     return node
 
 
 def get_melodic_metadata(scan_info):
-    return scan_info["bg"], scan_info["tr"]
+    return scan_info["bg"], scan_info["tr"], scan_info["mask"]
 
 
 def get_melodic_out_dir(scan_dir):

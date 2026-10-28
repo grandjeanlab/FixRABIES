@@ -96,6 +96,7 @@ def create_prepare_fix_workflow(
             output_names=[
                 "bg_image",
                 "tr_sec",
+                "mask",
             ],
             function=get_melodic_metadata,
         ),
@@ -183,6 +184,13 @@ def create_prepare_fix_workflow(
         "tr_sec",
         melodic,
         "tr_sec",
+    )
+
+    wf.connect(
+        melodic_metadata,
+        "mask",
+        melodic,
+        "mask",
     )
 
     wf.connect(
