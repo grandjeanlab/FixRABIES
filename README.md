@@ -1,210 +1,231 @@
+# FixRABIES
 
-FixRABIES is an alternative confound correction model implementing ICA-FIX workflow for rodent fMRI datasets preprocessed with RABIES (and potentially other preprocessing pipelines). 
+FixRABIES prepares rodent fMRI data for ICA-FIX, supports interactive
+component labelling and model training, applies FIX cleanup, and provides
+dual-regression and seed-based connectivity analyses. It currently accepts
+RABIES preprocessing outputs and supports the `mouseDSURQE`, `mouseAIBS`, and
+`ratSIGMA` template spaces.
 
-This is an opinonated pipeline, loosely based on [Zerbi et al. 2025](https://pubmed.ncbi.nlm.nih.gov/26296501/). 
+## Installation
 
-## Package roadmap. 
-- Dataset preparation for Fix (done)
-- Manual ICA labeling with GUI (work in progress)
-- FIX classifier training (done)
-- FIX classification
-- classification review
-- FIX denosing
-- Dual-regression analysis (optional, else can use RABIES anlysis workflow)
-- Seed-based analysis (optional, else can use RABIES analysis workflow)
+For development or a local checkout, use `uv`:
 
-## Planned supported spaces:
-- DSURQE (mouse)
-- AIBS (mouse)
-- SIGMA (rat)
-
-## Installation 
-```{bash}
+```bash
 git clone https://github.com/grandjeanlab/FixRABIES.git
 cd FixRABIES
-pip intall .
-```
-
-### Patch denoissing support (for "prepare")
-```{bash}
-pip install .[patch]
-```
-
-## Development
-### Nix development shell
-```{bash}
-nix develop . -c nu
-```
-This provides Python 3.14, uv, and GCC for Nix-based systems.
-
-### uv development
-```{bash}
-#create a virtual environement
-uv venv --python 3.14 .venv
-
-#get dependencies
 uv sync --dev --all-extras
-
-#run the cli
-uv run fixrabies -h 
+uv run fixrabies -h
 ```
 
-## Output directory structure
-FixRABIES directory sturcture
-```{text}
-├── data
-│   ├── sub-...
-│   └── sub-...
-├── models
-│   ├── custom_model.pyfix_model
-│   └── label_select.csv
-├── confound_correction
-│   ├── sub-...
-│   └── sub-...
-├── analysis
-│   ├── sub-...
-│   └── sub-...
-├── workflows
-│   ├── prepare
-│   └── ...
-└── log
-    ├── prepare.log
-    └── ...
+Install the optional patch-denoising dependency with:
+
+```bash
+pip install ".[patch]"
 ```
 
-Content of a FIX directory for a single subject 
-```{text}
-├── bg.nii.gz 
-├── design.fsf
-├── filtered_func_data_clean.nii.gz
-├── filtered_func_data_clean_smoothed.nii.gz
-├── filtered_func_data.ica
-│   ├── ...
-│   └── report
-│       ├── f1.png
-│       ├── t1.png
-│       ├── IC_1_thresh.png
-│       ├── ... 
-├── filtered_func_data.nii.gz
-├── fix
-│   ├── ...
-├── fix4melview_{custom_model}_thr{thr}.txt
-├── hand_labels_noise.txt
-├── mc
-│   └── prefiltered_func_data_mcf.par
-├── reg
-│   ├── highres2example_func.mat
-│   ├── highres.nii.gz
-│   └── highres_pveseg.nii.gz
-└── ...
+For a regular installation:
+
+```bash
+pip install .
 ```
 
-## Workflows
+Use the command help to see all available options and defaults:
 
-### prepare
-```{bash}
+```bash
+fixrabies -h
+fixrabies cleanup -h
+fixrabies analyze -h
+```
+
+## Workflow
+
+Each command uses the same working directory, passed with `-fix_dir`. Run the
+commands in this order:
+
+1. `prepare` creates one ICA-FIX-compatible scan directory per preprocessed
+   scan.
+2. `label` selects scans for manual component labelling and writes the
+   training list.
+3. `train` creates a `.pyfix_model` from the labelled scans.
+4. `classify` applies that model to every prepared scan.
+5. `review` opens the classification review interface.
+6. `cleanup` applies the reviewed/classified component list and optionally
+   smooths and censors the denoised data.
+7. `analyze` runs optional dual-regression and/or seed-based analyses on the
+   cleaned, smoothed data.
+
+All commands accept `-nipype` to configure execution. For example:
+
+```bash
 fixrabies prepare \
-  -preprocess_dir /path/to/preprocess/dir \
-  -fix_dir /path/to/fix/dir \
+  -preprocess_dir /path/to/rabies \
+  -fix_dir /path/to/fixrabies \
+  -species mouseDSURQE \
+  -nipype '{"plugin": "MultiProc", "n_procs": 4}'
+```
+
+## Command guide
+
+### Prepare scans
+
+```bash
+fixrabies prepare \
+  -preprocess_dir /path/to/rabies \
+  -fix_dir /path/to/fixrabies \
   -species mouseDSURQE
 ```
 
-FIX preparation using RABIES preporcessing as inputs. 
+`prepare` reads RABIES outputs, creates `data/<scan>/`, runs MELODIC, and
+writes the files needed by FIX. Use `-patch_denoise '{"apply": true, ...}'`
+when the optional patch-denoising dependency is installed.
 
-```{text}
-filtered_func_data.nii.gz <- {preprocess_dir}/bold_datasink/commonspace_old/_scan_info.../_run_.../sub-...nii.gz
-OR 
-filtered_func_data.nii.gz <- patch-denoise outputs
+### Label training scans
 
-bg.nii.gz <- {preprocess_dir}/bold_datasink/commonspace_resampled_template/commonspace_template.nii.gz
-
-mask.nii.gz <- {preprocess_dir}/bold_datasink/commonspace_mask/commonspace_template_brain_mask_resampled.nii.gz
-
-design.fsf <- generated
-
-fd.csv <- {preprocess_dir}/motion_datasink/FD_csv/_scan_info.../_run_.../sub-...csv
-
-mc/prefiltered_func_data_mcf.par <- {preprocess_dir}/motion_datasink/motion_param_csv/_scan_info.../_run_.../sub-...csv
-
-reg/highres.nii.gz <- {preprocess_dir}/bold_datasink/commonspace_resampled_template/commonspace_template.nii.gz
-
-reg/highres_pveseg.nii.gz <- {FixRABIES}/template/{species}/highres_pvseg.nii.gz
-
-reg/highres2example_func.mat <- generated 
-
-```
-
-Tasks:
-- Collect preprocessing outputs
-- Extract motion parameters
-- Run optional patch-denoising
-- Build FIX directory structure
-- Run melodic
-
-### label
-```{bash}
+```bash
 fixrabies label \
-  -fix_dir /path/to/fix/dir \
+  -fix_dir /path/to/fixrabies \
   -select_label 20
 ```
 
-Calls a PySide graphical interface to label noise component for training. 
+`-select_label` is the percentage of prepared scans to label. A value of `0`
+selects one scan; `100` selects all scans. The GUI writes
+`hand_labels_noise.txt` in each selected scan and records absolute scan paths
+in `model/training_set.txt`. If that file already has the expected number of
+non-empty entries, it is reused.
 
-Graphical concept.   
-```{text}
-+------------------------------------------------+   
-| Subject - Component 17                         |   
-+----------------------+-------------------------+   
-| Spatial Map          | Power Spectrum          |   
-|                      |                         |   
-|                      |                         |   
-+----------------------+-------------------------+   
-| Time                                           |   
-+------------------------------------------------+   
-| [Artifact] [Signal] [Unsure]                   |   
-+------------------------------------------------+   
-| Prev | Next | Save                             |   
-+------------------------------------------------+   
-```
+### Train a model
 
-### train
-```{bash}
+```bash
 fixrabies train \
-  -fix_dir /path/to/fix/dir \
-  -fix_model my_model
+  -fix_dir /path/to/fixrabies \
+  -fix_model mouse_awake_v1 \
+  -species mouseDSURQE
 ```
 
-This will create /path/to/fix/dir/models/my_model.pyfix_model
+Training requires a non-empty `model/training_set.txt`; every listed scan must
+be a direct child of `data/` and contain `fix/features.csv` and
+`hand_labels_noise.txt`. The trained model is written as
+`model/mouse_awake_v1.pyfix_model`.
 
-### classify
-```{bash}
+### Classify and review components
+
+```bash
 fixrabies classify \
-  -fix_dir /path/to/fix/dir \
-  -fix_model my_model
-```
+  -fix_dir /path/to/fixrabies \
+  -fix_model mouse_awake_v1 \
+  -threshold 20
 
-I plan to implement re-usable models in pyfix. currently only supports models trained in the ***train*** workflow
-
-### review
-```{bash}
 fixrabies review \
-  -fix_dir /path/to/fix/dir
+  -fix_dir /path/to/fixrabies \
+  -fix_model mouse_awake_v1 \
+  -threshold 20
 ```
-will open a GUI with all classified components and the possibility to manually correct them. same panel as in the train workflow 
 
-### cleanup
-```{bash}
+Classification writes
+`data/<scan>/fix4melview_mouse_awake_v1_thr20.txt`. Use the same model name
+and threshold for `review` and `cleanup`.
+
+### Apply FIX cleanup
+
+```bash
 fixrabies cleanup \
-  -fix_dir /path/to/fix/dir
+  -fix_dir /path/to/fixrabies \
+  -fix_model mouse_awake_v1 \
+  -threshold 20 \
+  -smooth 0.3 \
+  -FD_threshold 0.075 \
+  -DVARS_threshold 1.5
 ```
 
-will apply FIX denoising and other options and outputs files into a "RABIES-like" directory to be compatible with the RABIES analysis workflow
+`cleanup` applies FIX to every classified scan, then writes
+`filtered_func_data_clean_smoothed.nii.gz`. It computes DVARS, reads the
+`MeanFD` column from `fd.csv`, and writes `exclude.csv` with the metrics and
+their selections. Set either threshold to `0` to disable that censoring
+criterion. Optional FIX flags are:
 
-### analyze
-```{bash}
+```bash
+-motionhp              # add motion-parameter regression
+-aggressive            # use full-variance cleanup
+-highpass SECONDS      # add FIX high-pass filtering
+```
+
+### Run connectivity analysis
+
+Run dual regression with the per-scan ICA maps:
+
+```bash
 fixrabies analyze \
-  -fix_dir /path/to/fix/dir \
-  -DR_template /path/to/atlas.nii.gz
+  -fix_dir /path/to/fixrabies \
+  --dice_threshold 90 \
+  --extract_threshold 15z
 ```
 
+Provide `-DR_template` to resample and use a custom ICA atlas:
 
+```bash
+fixrabies analyze \
+  -fix_dir /path/to/fixrabies \
+  -DR_template /path/to/atlas_4d.nii.gz \
+  --norm
+```
+
+`--extract_threshold` accepts a percentile such as `90p` (0--100) or a
+z-score such as `7.5z`. Existing dual-regression stage-2 maps are reused, but
+the outcome report is still generated.
+
+Add seed-based analyses with a JSON list of seed masks:
+
+```bash
+fixrabies analyze \
+  -fix_dir /path/to/fixrabies \
+  -seed '{
+    "apply": true,
+    "seeds": [
+      "/path/to/acc.nii.gz",
+      "/path/to/thalamus.nii.gz"
+    ]
+  }'
+```
+
+## Output structure
+
+The working directory is the contract between commands:
+
+```text
+<fix_dir>/
+├── data/
+│   └── <scan>/
+│       ├── filtered_func_data.nii.gz
+│       ├── filtered_func_data.ica/
+│       ├── mask.nii.gz
+│       ├── fd.csv
+│       ├── fix/features.csv
+│       ├── hand_labels_noise.txt
+│       ├── fix4melview_<model>_thr<threshold>.txt
+│       ├── filtered_func_data_clean.nii.gz
+│       ├── filtered_func_data_clean_smoothed.nii.gz
+│       └── exclude.csv
+├── model/
+│   ├── training_set.txt
+│   └── <model>.pyfix_model
+├── results/
+│   └── <scan>/
+│       ├── dr/
+│       │   ├── dr_stage2_subject00000.nii.gz
+│       │   ├── dr_stage2_subject00000_Z.nii.gz
+│       │   └── outcomes.csv
+│       └── seed/
+│           ├── <seed>.txt
+│           ├── <seed>.nii.gz
+│           ├── <seed>_Z.nii.gz
+│           └── corr.txt
+└── logs/
+    ├── fixrabies.log
+    └── <command>.log
+```
+
+`results/<scan>/dr/outcomes.csv` has one row per ICA component and contains
+the masked Dice overlap (`beta_dice`, `z_dice`) and extracted values
+(`beta_value`, `z_value`) for dual-regression beta and Z maps.
+`results/<scan>/seed/corr.txt` is a tab-separated correlation matrix whose
+row and column names are the seed basenames.
