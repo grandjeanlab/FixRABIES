@@ -1,3 +1,4 @@
+import re
 from importlib.resources import files
 from pathlib import Path
 
@@ -170,3 +171,111 @@ def validate_cleanup_files(scan_list):
         )
 
     return scan_list
+
+
+def validate_analysis_files(scan_list):
+    missing_files = [
+        str(Path(scan) / "filtered_func_data_clean_smoothed.nii.gz")
+        for scan in scan_list
+        if not (
+            Path(scan) / "filtered_func_data_clean_smoothed.nii.gz"
+        ).is_file()
+    ]
+    if missing_files:
+        raise ValueError(
+            "Missing cleaned and smoothed files:\n"
+            + "\n".join(missing_files)
+        )
+
+    return scan_list
+
+
+def validate_analysis_ica_files(scan_list):
+    missing_files = [
+        str(Path(scan) / "ica.nii.gz")
+        for scan in scan_list
+        if not (Path(scan) / "ica.nii.gz").is_file()
+    ]
+    if missing_files:
+        raise ValueError(
+            "Missing per-scan ICA maps:\n" + "\n".join(missing_files)
+        )
+
+    return scan_list
+
+
+def validate_analysis_mask_files(scan_list):
+    missing_files = [
+        str(Path(scan) / "mask.nii.gz")
+        for scan in scan_list
+        if not (Path(scan) / "mask.nii.gz").is_file()
+    ]
+    if missing_files:
+        raise ValueError(
+            "Missing per-scan masks:\n" + "\n".join(missing_files)
+        )
+
+    return scan_list
+
+
+def validate_analysis_image(image_file, image_type):
+    image_file = Path(image_file)
+    if not image_file.is_file():
+        raise ValueError(f"{image_type} does not exist: {image_file}")
+
+    return str(image_file.resolve())
+
+
+def validate_seed_files(seed):
+    if not seed.get("apply", False):
+        return []
+
+    seed_files = seed.get("seeds", [])
+    if not seed_files:
+        raise ValueError("Seed analysis requires at least one seed image")
+
+    return [
+        validate_analysis_image(seed_file, "Seed image")
+        for seed_file in seed_files
+    ]
+
+
+def validate_extract_threshold(extract_threshold):
+    match = re.fullmatch(r"(\d+(?:\.\d+)?)([pz])", extract_threshold)
+    if match is None:
+        raise ValueError(
+            "extract_threshold must be a percentage such as '90p' or "
+            "a z-score such as '7.5z'"
+        )
+
+    value = float(match.group(1))
+    threshold_type = match.group(2)
+    if threshold_type == "p" and not 0 <= value <= 100:
+        raise ValueError(
+            f"Percentage extract_threshold must be between 0 and 100, "
+            f"got {extract_threshold}"
+        )
+
+    return extract_threshold
+
+
+def validate_dice_threshold(dice_threshold):
+    if not 0 <= dice_threshold <= 100:
+        raise ValueError(
+            f"dice_threshold must be between 0 and 100, got {dice_threshold}"
+        )
+
+    return dice_threshold
+
+
+def get_pending_dual_regression_scans(fix_dir, scan_list):
+    results_dir = Path(fix_dir) / "results"
+    pending_scans = []
+    for scan in scan_list:
+        dr_dir = results_dir / Path(scan).name / "dr"
+        beta_file = dr_dir / "dr_stage2_subject00000.nii.gz"
+        z_file = dr_dir / "dr_stage2_subject00000_Z.nii.gz"
+        if not (beta_file.is_file() and z_file.is_file()):
+            pending_scans.append(scan)
+
+    return pending_scans

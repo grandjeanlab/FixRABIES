@@ -571,8 +571,9 @@ a species-specific atlas is used.
 
     dr.add_argument(
         "--dice_threshold",
-        metavar=float,
-        default="90",
+        type=float,
+        metavar="PERCENT",
+        default=90,
         help="Dice overlap threshold",
     )
 
