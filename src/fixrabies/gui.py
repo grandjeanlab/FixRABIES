@@ -120,13 +120,13 @@ class ComponentLabeler(QMainWindow):
         image_container = QWidget()
         image_layout = QVBoxLayout(image_container)
         self.image_labels: list[QLabel] = []
-        for _ in range(3):
+        for index in range(3):
             image_label = QLabel()
             image_label.setAlignment(Qt.AlignCenter)
-            image_label.setMinimumSize(500, 300)
+            image_label.setMinimumSize(500, 0)
             image_label.setStyleSheet("border: 1px solid #555;")
             self.image_labels.append(image_label)
-            image_layout.addWidget(image_label)
+            image_layout.addWidget(image_label, 4 if index == 0 else 1)
         scroll_area.setWidget(image_container)
         layout.addWidget(scroll_area)
 
