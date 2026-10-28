@@ -26,7 +26,7 @@ def prepare_rabies(preprocess_dir):
 
     bold_files = sorted(
         preprocess_dir.glob(
-            "bold_datasink/commonspace_bold/_scan_info*/_run_*/*bold_resampled.nii*"
+            "bold_datasink/commonspace_bold/_scan_info*/_run_*/*_resampled.nii*"
         )
     )
 
