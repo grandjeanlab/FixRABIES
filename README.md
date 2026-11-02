@@ -115,6 +115,24 @@ be a direct child of `data/` and contain `fix/features.csv` and
 `hand_labels_noise.txt`. The trained model is written as
 `model/mouse_awake_v1.pyfix_model`.
 
+`train` can also import an existing model without a training set. Pass either
+the name of a model packaged with PyFIX or a path to an existing
+`.pyfix_model` file:
+
+```bash
+fixrabies train \
+  -fix_dir /path/to/fixrabies \
+  -fix_model Standard
+
+fixrabies train \
+  -fix_dir /path/to/fixrabies \
+  -fix_model /path/to/existing_model.pyfix_model
+```
+
+The model is copied to `model/<model-name>.pyfix_model`, then the command
+stops without running training. Use `<model-name>` with `classify`, `review`,
+and `cleanup`.
+
 ### Classify and review components
 
 ```bash

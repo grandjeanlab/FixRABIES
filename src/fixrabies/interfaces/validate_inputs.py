@@ -1,6 +1,7 @@
 import re
-from importlib.resources import files
+from importlib.resources import as_file, files
 from pathlib import Path
+from shutil import copyfile
 
 
 def validate_scans(scans):
@@ -54,18 +55,14 @@ def validate_feature_files(scan_list):
         if not (Path(scan) / "fix" / "features.csv").is_file()
     ]
     if missing_features:
-        raise ValueError(
-            "Missing FIX feature files:\n" + "\n".join(missing_features)
-        )
+        raise ValueError("Missing FIX feature files:\n" + "\n".join(missing_features))
 
     return scan_list
 
 
 def validate_select_label(select_label):
     if not 0 <= select_label <= 100:
-        raise ValueError(
-            f"select_label must be between 0 and 100, got {select_label}"
-        )
+        raise ValueError(f"select_label must be between 0 and 100, got {select_label}")
 
     return select_label
 
@@ -73,9 +70,7 @@ def validate_select_label(select_label):
 def validate_training_set(fix_dir):
     training_set_file = Path(fix_dir) / "model" / "training_set.txt"
     if not training_set_file.is_file():
-        raise ValueError(
-            f"Training set file does not exist: {training_set_file}"
-        )
+        raise ValueError(f"Training set file does not exist: {training_set_file}")
 
     scan_list = [
         line
@@ -95,13 +90,9 @@ def validate_training_scans(data_dir, scan_list):
         scan_path = Path(scan)
         expected_scan_path = data_dir / scan_path.name
         if scan_path.is_absolute() and scan_path.resolve() != expected_scan_path:
-            raise ValueError(
-                f"Training scan is not in the data directory: {scan_path}"
-            )
+            raise ValueError(f"Training scan is not in the data directory: {scan_path}")
         if not expected_scan_path.is_dir():
-            raise ValueError(
-                f"Training scan does not exist: {expected_scan_path}"
-            )
+            raise ValueError(f"Training scan does not exist: {expected_scan_path}")
         validated_scans.append(str(expected_scan_path))
 
     return validated_scans
@@ -114,9 +105,7 @@ def validate_hand_label_files(scan_list):
         if not (Path(scan) / "hand_labels_noise.txt").is_file()
     ]
     if missing_labels:
-        raise ValueError(
-            "Missing hand label files:\n" + "\n".join(missing_labels)
-        )
+        raise ValueError("Missing hand label files:\n" + "\n".join(missing_labels))
 
     return scan_list
 
@@ -128,6 +117,46 @@ def pyfix_model_exists(fix_model):
         f"{fix_model}.pyfix_model",
     )
     return model_file.is_file()
+
+
+def copy_existing_pyfix_model(fix_dir, fix_model):
+    candidate = Path(fix_model).expanduser()
+    is_path = (
+        candidate.is_absolute()
+        or candidate.parent != Path(".")
+        or candidate.suffix == ".pyfix_model"
+    )
+    if is_path:
+        source_model = (
+            candidate
+            if candidate.suffix == ".pyfix_model"
+            else Path(f"{candidate}.pyfix_model")
+        ).resolve()
+        if not source_model.is_file():
+            raise ValueError(
+                "fix_model path must point to an existing .pyfix_model file: "
+                f"{source_model}"
+            )
+        model_name = source_model.name.removesuffix(".pyfix_model")
+    else:
+        packaged_model = files("pyfix").joinpath(
+            "resources",
+            "models",
+            f"{fix_model}.pyfix_model",
+        )
+        if not packaged_model.is_file():
+            return None
+        source_model = packaged_model
+        model_name = fix_model
+
+    destination = (
+        Path(fix_dir).expanduser().resolve() / "model" / f"{model_name}.pyfix_model"
+    )
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with as_file(source_model) as source_file:
+        copyfile(source_file, destination)
+
+    return model_name
 
 
 def validate_trained_model(fix_dir, fix_model):
@@ -166,9 +195,7 @@ def validate_cleanup_files(scan_list):
         if not (Path(scan) / required_file).is_file()
     ]
     if missing_files:
-        raise ValueError(
-            "Missing cleanup files:\n" + "\n".join(missing_files)
-        )
+        raise ValueError("Missing cleanup files:\n" + "\n".join(missing_files))
 
     return scan_list
 
@@ -177,14 +204,11 @@ def validate_analysis_files(scan_list):
     missing_files = [
         str(Path(scan) / "filtered_func_data_clean_smoothed.nii.gz")
         for scan in scan_list
-        if not (
-            Path(scan) / "filtered_func_data_clean_smoothed.nii.gz"
-        ).is_file()
+        if not (Path(scan) / "filtered_func_data_clean_smoothed.nii.gz").is_file()
     ]
     if missing_files:
         raise ValueError(
-            "Missing cleaned and smoothed files:\n"
-            + "\n".join(missing_files)
+            "Missing cleaned and smoothed files:\n" + "\n".join(missing_files)
         )
 
     return scan_list
@@ -197,9 +221,7 @@ def validate_analysis_ica_files(scan_list):
         if not (Path(scan) / "ica.nii.gz").is_file()
     ]
     if missing_files:
-        raise ValueError(
-            "Missing per-scan ICA maps:\n" + "\n".join(missing_files)
-        )
+        raise ValueError("Missing per-scan ICA maps:\n" + "\n".join(missing_files))
 
     return scan_list
 
@@ -211,9 +233,7 @@ def validate_analysis_mask_files(scan_list):
         if not (Path(scan) / "mask.nii.gz").is_file()
     ]
     if missing_files:
-        raise ValueError(
-            "Missing per-scan masks:\n" + "\n".join(missing_files)
-        )
+        raise ValueError("Missing per-scan masks:\n" + "\n".join(missing_files))
 
     return scan_list
 
@@ -235,8 +255,7 @@ def validate_seed_files(seed):
         raise ValueError("Seed analysis requires at least one seed image")
 
     return [
-        validate_analysis_image(seed_file, "Seed image")
-        for seed_file in seed_files
+        validate_analysis_image(seed_file, "Seed image") for seed_file in seed_files
     ]
 
 

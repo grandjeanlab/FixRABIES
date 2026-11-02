@@ -103,15 +103,20 @@ def test_validate_trained_model():
     assert validate_trained_model(fix_dir, "test_v1") == str(model_file)
 
 
-def test_run_train_rejects_existing_pyfix_model():
+def test_run_train_copies_existing_pyfix_model():
     fix_dir = Path("~/test").expanduser()
+    model_file = fix_dir / "model" / "Standard.pyfix_model"
+    original = model_file.read_bytes() if model_file.exists() else None
 
     assert pyfix_model_exists("Standard")
-    with pytest.raises(
-        ValueError,
-        match="FIX model already exists in PyFIX: Standard.pyfix_model",
-    ):
+    try:
         run_train(SimpleNamespace(fix_dir=fix_dir, fix_model="Standard"))
+        assert model_file.is_file()
+    finally:
+        if original is None:
+            model_file.unlink(missing_ok=True)
+        else:
+            model_file.write_bytes(original)
 
 
 def test_classifier_node_uses_current_fix_command():
