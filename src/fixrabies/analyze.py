@@ -55,7 +55,13 @@ def run_analyze(args):
         )
         workflow.run(plugin=plugin, plugin_args=nipype_args)
 
-    completed_scans = [scan for scan in scan_list if scan not in pending_scans]
+    remaining_pending_scans = get_pending_dual_regression_scans(
+        args.fix_dir,
+        scan_list,
+    )
+    completed_scans = [
+        scan for scan in scan_list if scan not in remaining_pending_scans
+    ]
     if completed_scans:
         validate_analysis_ica_files(completed_scans)
         outcomes_workflow = create_analyze_workflow(
