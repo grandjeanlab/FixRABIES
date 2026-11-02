@@ -608,6 +608,14 @@ applied after FIX cleanup.
     )
 
     cleanup.add_argument(
+        "-mask",
+        type=parse_boolean,
+        metavar="BOOLEAN",
+        default=True,
+        help="Mask cleaned images with data/<scan>/mask.nii.gz.",
+    )
+
+    cleanup.add_argument(
         "-FD_threshold",
         type=float,
         default=0,
@@ -827,9 +835,29 @@ def build_parser():
     parser = argparse.ArgumentParser(
         prog="fixrabies",
         formatter_class=FixFormatter,
+        usage="%(prog)s [-h] COMMAND ...",
         description="""
 FixRABIES, a modern workflow 
 to  implement FIX in rodents.
+""",
+        epilog="""
+FIX workflows:
+  prepare         Prepare RABIES outputs for FIX.
+  label           Label ICA components for training.
+  train           Train or import a FIX model.
+  classify        Apply a FIX classifier.
+  review          Review classified ICA components.
+  retrain         Train a model from reviewed classifications.
+  cleanup         Apply FIX denoising and post-processing.
+
+Results workflows:
+  analyze         Run scan-level connectivity analyses.
+
+Results group workflows:
+  analyze_group   Aggregate scan-level connectivity results.
+
+Import workflow:
+  import          Import RABIES confound-corrected data for analysis.
 """,
     )
 
@@ -838,6 +866,7 @@ to  implement FIX in rodents.
         dest="command",
         required=True,
     )
+    subparsers.help = argparse.SUPPRESS
 
     add_prepare_parser(subparsers, common)
     add_label_parser(subparsers, common)
