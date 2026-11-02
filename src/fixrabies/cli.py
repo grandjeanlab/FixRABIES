@@ -99,6 +99,12 @@ def run_analyze_command(args):
     run_analyze(args)
 
 
+def run_import_command(args):
+    from fixrabies.import_confound import run_import
+
+    run_import(args)
+
+
 # ==============================================================================
 # Common arguments
 # ==============================================================================
@@ -140,7 +146,6 @@ Example:
 }'
 """,
     )
-
 
     common.add_argument(
         "-log-level",
@@ -613,6 +618,78 @@ Example:
 
 
 # ==============================================================================
+# Import (rabies confound)
+# ==============================================================================
+
+
+def add_import_parser(subparsers, common):
+
+    parser = subparsers.add_parser(
+        "import",
+        parents=[common],
+        formatter_class=FixFormatter,
+        help="Import RABIES confound corrected scans for analyse.",
+        description="""
+Import a confound-corrected dataset for analysis.
+
+This command gathers confound corrected outputs,
+and creates a minimal FixRABIES working
+directory to enable the analyze command
+""",
+    )
+
+    req = parser.add_argument_group("Required arguments")
+
+    req.add_argument(
+        "-species",
+        default="mouseDSURQE",
+        choices=[
+            "mouseDSURQE",
+            "mouseAIBS",
+            "ratSIGMA",
+        ],
+        help="""
+Species/template space.
+
+mouseDSURQE
+mouseAIBS
+ratSIGMA
+""",
+    )
+
+    req.add_argument(
+        "-preprocess_dir",
+        required=True,
+        type=Path,
+        metavar="PATH",
+        help="Root preprocessing directory.",
+    )
+
+    req.add_argument(
+        "-confound_dir",
+        required=True,
+        type=Path,
+        metavar="PATH",
+        help="Root confound_corrected directory.",
+    )
+
+    prep = parser.add_argument_group("Preprocessing options")
+
+    prep.add_argument(
+        "-preprocess_software",
+        choices=["rabies"],
+        default="rabies",
+        help="""
+Preprocessing software.
+
+Currently only RABIES is supported.
+""",
+    )
+
+    parser.set_defaults(func=run_import_command)
+
+
+# ==============================================================================
 # Parser builder
 # ==============================================================================
 
@@ -643,6 +720,7 @@ to  implement FIX in rodents.
     add_review_parser(subparsers, common)
     add_cleanup_parser(subparsers, common)
     add_analyze_parser(subparsers, common)
+    add_import_parser(subparsers, common)
 
     return parser
 

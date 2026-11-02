@@ -39,8 +39,8 @@ fixrabies analyze -h
 
 ## Workflow
 
-Each command uses the same working directory, passed with `-fix_dir`. Run the
-commands in this order:
+Each command uses the same working directory, passed with `-fix_dir`. For the
+full ICA-FIX workflow, run commands in this order:
 
 1. `prepare` creates one ICA-FIX-compatible scan directory per preprocessed
    scan.
@@ -53,6 +53,14 @@ commands in this order:
    smooths and censors the denoised data.
 7. `analyze` runs optional dual-regression and/or seed-based analyses on the
    cleaned, smoothed data.
+
+Alternatively, `import` creates an analysis-ready working directory from
+RABIES confound-correction outputs. Use this shorter path when FIX preparation,
+labelling, training, classification, review, and cleanup are not needed:
+
+```text
+RABIES preprocessing + confound correction -> import -> analyze
+```
 
 All commands accept `-nipype` to configure execution. For example:
 
@@ -149,6 +157,37 @@ criterion. Optional FIX flags are:
 -highpass SECONDS      # add FIX high-pass filtering
 ```
 
+### Import RABIES confound-corrected data
+
+Use `import` to analyze RABIES confound-corrected data without running the
+ICA-FIX workflow:
+
+```bash
+fixrabies import \
+  -preprocess_dir /path/to/rabies_preprocessing \
+  -confound_dir /path/to/rabies_confound_correction \
+  -fix_dir /path/to/fixrabies_analysis \
+  -species mouseDSURQE
+```
+
+`-confound_dir` must contain RABIES cleaned images below:
+
+```text
+confound_correction_datasink/cleaned_timeseries/_split_name*/*_cleaned.nii*
+```
+
+`-preprocess_dir` must contain the common-space brain mask at:
+
+```text
+bold_datasink/commonspace_mask/commonspace_template_brain_mask_resampled.nii.gz
+```
+
+For every discovered cleaned image, `import` writes an analysis-ready
+`data/<scan>/` directory. It copies the cleaned image as
+`filtered_func_data_clean_smoothed.nii.gz`, copies the common-space mask as
+`mask.nii.gz`, and resamples the packaged species ICA template to the cleaned
+image grid as `ica.nii.gz`. Continue with `fixrabies analyze`.
+
 ### Run connectivity analysis
 
 Run dual regression with the per-scan ICA maps:
@@ -204,6 +243,7 @@ The working directory is the contract between commands:
 │       ├── fix4melview_<model>_thr<threshold>.txt
 │       ├── filtered_func_data_clean.nii.gz
 │       ├── filtered_func_data_clean_smoothed.nii.gz
+│       ├── ica.nii.gz
 │       └── exclude.csv
 ├── model/
 │   ├── training_set.txt
@@ -229,3 +269,8 @@ the masked Dice overlap (`beta_dice`, `z_dice`) and extracted values
 (`beta_value`, `z_value`) for dual-regression beta and Z maps.
 `results/<scan>/seed/corr.txt` is a tab-separated correlation matrix whose
 row and column names are the seed basenames.
+
+The full ICA-FIX workflow creates all listed `data/<scan>/` files. The
+analysis-only `import` workflow creates only
+`filtered_func_data_clean_smoothed.nii.gz`, `mask.nii.gz`, and `ica.nii.gz`,
+which are the files required by `analyze`.
