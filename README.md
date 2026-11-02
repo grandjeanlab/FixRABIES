@@ -303,7 +303,8 @@ p-value maps; and one `outcomes_ic<N>.csv` table per component.
 Add `-seed True` to aggregate seed analysis. Every scan must then contain at
 least one `.nii.gz` image and `corr.txt` under `results/<scan>/seed/`.
 Component maps receive the same concatenated, mean, standard-deviation,
-t-statistic, and p-value outputs under `results_group/seed/`.
+t-statistic, and p-value outputs under
+`results_group/seed/<seed-basename>/`.
 `results_group/seed/corr.csv` has one row per scan and one column per
 seed-correlation matrix element.
 
@@ -343,11 +344,13 @@ The working directory is the contract between commands:
 ├── results_group/
 │   ├── dr/
 │   │   ├── scan_list.txt
-│   │   ├── dr_stage2_ic<N>_concat.nii.gz
-│   │   ├── dr_stage2_ic<N>_concatZ.nii.gz
-│   │   └── outcomes_ic<N>.csv
+│   │   └── ic<N>/
+│   │       ├── dr_stage2_ic<N>_concat.nii.gz
+│   │       ├── dr_stage2_ic<N>_concatZ.nii.gz
+│   │       └── outcomes_ic<N>.csv
 │   └── seed/
-│       ├── <seed>_concat.nii.gz
+│       ├── <seed-basename>/
+│       │   └── <seed-basename>_concat.nii.gz
 │       └── corr.csv
 └── logs/
     ├── fixrabies.log

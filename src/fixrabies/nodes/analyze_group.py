@@ -73,6 +73,8 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
 
         for component in range(beta_data[3]):
             component_index = component + 1
+            component_dir = dr_dir / f"ic{component_index}"
+            component_dir.mkdir(parents=True, exist_ok=True)
             beta_component_files = []
             z_component_files = []
             for scan_name, beta_image, z_image in zip(
@@ -82,10 +84,11 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
                 strict=True,
             ):
                 beta_component_file = (
-                    dr_dir / f".{scan_name}_dr_stage2_ic{component_index}.nii.gz"
+                    component_dir / f".{scan_name}_dr_stage2_ic{component_index}.nii.gz"
                 )
                 z_component_file = (
-                    dr_dir / f".{scan_name}_dr_stage2_ic{component_index}_Z.nii.gz"
+                    component_dir
+                    / f".{scan_name}_dr_stage2_ic{component_index}_Z.nii.gz"
                 )
                 beta_image_data = nib.load(beta_image)
                 z_image_data = nib.load(z_image)
@@ -105,12 +108,12 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
             try:
                 save_group_maps(
                     beta_component_files,
-                    dr_dir,
+                    component_dir,
                     f"dr_stage2_ic{component_index}",
                 )
                 save_group_maps(
                     z_component_files,
-                    dr_dir,
+                    component_dir,
                     f"dr_stage2_ic{component_index}",
                     z_map=True,
                 )
@@ -141,7 +144,7 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
                 ]
             )
             component_outcomes.to_csv(
-                dr_dir / f"outcomes_ic{component + 1}.csv",
+                dr_dir / f"ic{component + 1}" / f"outcomes_ic{component + 1}.csv",
                 index=False,
             )
 
@@ -168,7 +171,7 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
                 )
             save_group_maps(
                 seed_files,
-                seed_dir,
+                seed_dir / Path(seed_name).name.removesuffix(".nii.gz"),
                 Path(seed_name).name.removesuffix(".nii.gz"),
             )
 
