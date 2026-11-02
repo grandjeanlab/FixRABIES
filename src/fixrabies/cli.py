@@ -52,6 +52,15 @@ class FixFormatter(
     """Custom argparse formatter."""
 
 
+def parse_boolean(value: str) -> bool:
+    normalized_value = value.lower()
+    if normalized_value == "true":
+        return True
+    if normalized_value == "false":
+        return False
+    raise argparse.ArgumentTypeError(f"Expected True or False, got: {value}")
+
+
 # ==============================================================================
 # Lazy command dispatchers
 # ==============================================================================
@@ -567,34 +576,20 @@ a species-specific atlas is used.
 """,
     )
 
-    norm_group = dr.add_mutually_exclusive_group()
-    norm_group.add_argument(
+    dr.add_argument(
         "-norm",
-        dest="norm",
-        action="store_true",
+        type=parse_boolean,
+        metavar="BOOLEAN",
         default=True,
         help="Apply variance normalization.",
     )
-    norm_group.add_argument(
-        "-no_norm",
-        dest="norm",
-        action="store_false",
-        help="Disable variance normalization.",
-    )
 
-    demean_group = dr.add_mutually_exclusive_group()
-    demean_group.add_argument(
+    dr.add_argument(
         "-demean",
-        dest="demean",
-        action="store_true",
+        type=parse_boolean,
+        metavar="BOOLEAN",
         default=True,
         help="Demean dual-regression data and seed GLM designs.",
-    )
-    demean_group.add_argument(
-        "-no_demean",
-        dest="demean",
-        action="store_false",
-        help="Do not demean dual-regression data or seed GLM designs.",
     )
 
     dr.add_argument(

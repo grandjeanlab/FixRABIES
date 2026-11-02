@@ -223,15 +223,15 @@ Provide `-DR_template` to resample and use a custom ICA atlas:
 fixrabies analyze \
   -fix_dir /path/to/fixrabies \
   -DR_template /path/to/atlas_4d.nii.gz \
-  -norm
+  -norm True \
+  -demean True
 ```
 
 `-extract_threshold` accepts a percentile such as `90p` (0--100) or a
 z-score such as `7.5z`. Existing dual-regression stage-2 maps are reused, but
 the outcome report is still generated.
-Variance normalization is enabled by default; pass `-no_norm` to disable it.
-Demeaning is enabled by default for dual regression and seed GLM designs; pass
-`-no_demean` to disable it.
+Variance normalization and demeaning are enabled by default. Set `-norm False`
+or `-demean False` to disable either option.
 
 Add seed-based analyses with a JSON list of seed masks:
 
