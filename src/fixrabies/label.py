@@ -11,7 +11,11 @@ def get_matching_training_set(fix_dir, scan_count, select_label):
         if select_label == 0
         else math.ceil(scan_count * select_label / 100)
     )
-    training_set_file = Path(fix_dir) / "model" / "training_set.txt"
+    training_set_file = (
+        Path(fix_dir).expanduser().resolve()
+        / "model"
+        / "training_set.txt"
+    )
     if not training_set_file.is_file():
         return None
 
