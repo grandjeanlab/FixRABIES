@@ -1,7 +1,31 @@
 import logging
+import re
 from pathlib import Path
 
 logger = logging.getLogger("fixrabies.review")
+
+NOISE_LIST_PATTERN = re.compile(
+    r"^\s*\[(?:\d+\s*(?:,\s*\d+\s*)*)?\]\s*$"
+)
+
+
+def keep_noise_component_lines(scan_list, fix_model, threshold):
+    artifact_filename = f"fix4melview_{fix_model}_thr{threshold}.txt"
+    for scan in scan_list:
+        artifact_list = Path(scan) / artifact_filename
+        component_lines = [
+            line
+            for line in artifact_list.read_text(encoding="utf-8").splitlines()
+            if NOISE_LIST_PATTERN.fullmatch(line)
+        ]
+        if len(component_lines) != 1:
+            raise ValueError(
+                f"Expected exactly one component list in: {artifact_list}"
+            )
+        artifact_list.write_text(
+            component_lines[0].strip() + "\n",
+            encoding="utf-8",
+        )
 
 
 def run_review(args):
@@ -27,6 +51,7 @@ def run_review(args):
     validate_feature_files(scan_list)
     threshold = validate_select_label(args.threshold)
     validate_classification_outputs(scan_list, args.fix_model, threshold)
+    keep_noise_component_lines(scan_list, args.fix_model, threshold)
 
     workflow = create_review_workflow(
         fix_dir=args.fix_dir,
