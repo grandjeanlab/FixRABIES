@@ -87,7 +87,7 @@ def validate_training_scans(data_dir, scan_list):
     data_dir = Path(data_dir).resolve()
     validated_scans = []
     for scan in scan_list:
-        scan_path = Path(scan)
+        scan_path = Path(scan).expanduser()
         expected_scan_path = data_dir / scan_path.name
         if scan_path.is_absolute() and scan_path.resolve() != expected_scan_path:
             raise ValueError(f"Training scan is not in the data directory: {scan_path}")

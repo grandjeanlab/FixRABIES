@@ -84,6 +84,12 @@ def run_train_command(args):
     run_train(args)
 
 
+def run_retrain_command(args):
+    from fixrabies.retrain import run_retrain
+
+    run_retrain(args)
+
+
 def run_classify_command(args):
     from fixrabies.classify import run_classify
 
@@ -354,6 +360,72 @@ Example:
     )
 
     parser.set_defaults(func=run_train_command)
+
+
+# ==============================================================================
+# Retrain
+# ==============================================================================
+
+
+def add_retrain_parser(subparsers, common):
+    parser = subparsers.add_parser(
+        "retrain",
+        parents=[common],
+        formatter_class=FixFormatter,
+        help="Train a model from reviewed classifications.",
+    )
+
+    req = parser.add_argument_group("Required arguments")
+    req.add_argument(
+        "-old_fix_model",
+        required=True,
+        metavar="MODEL",
+        help="Model used to create the reviewed classification files.",
+    )
+    req.add_argument(
+        "-new_fix_model",
+        required=True,
+        metavar="MODEL",
+        help="Name of the retrained model to create.",
+    )
+
+    options = parser.add_argument_group("Retraining options")
+    options.add_argument(
+        "-species",
+        default="mouseDSURQE",
+        choices=["mouseDSURQE", "mouseAIBS", "ratSIGMA"],
+        help="Species/template space used to extract FIX features.",
+    )
+    options.add_argument(
+        "-old_threshold",
+        "-old_therhold",
+        dest="old_threshold",
+        type=int,
+        default=20,
+        metavar="VALUE",
+        help="Classification threshold used with the old model.",
+    )
+    options.add_argument(
+        "-scan_list",
+        type=json.loads,
+        metavar="JSON",
+        help="""
+Scans to use for retraining.
+
+If omitted, all directories under <fix_dir>/data are used.
+The selected absolute paths are saved to
+<fix_dir>/model/training_set.txt.
+
+Example:
+
+-scan_list '[
+    "/path/to/fixrabies/data/scan1",
+    "/path/to/fixrabies/data/scan2"
+]'
+""",
+    )
+
+    parser.set_defaults(func=run_retrain_command)
 
 
 # ==============================================================================
@@ -734,6 +806,7 @@ to  implement FIX in rodents.
     add_prepare_parser(subparsers, common)
     add_label_parser(subparsers, common)
     add_train_parser(subparsers, common)
+    add_retrain_parser(subparsers, common)
     add_classify_parser(subparsers, common)
     add_review_parser(subparsers, common)
     add_cleanup_parser(subparsers, common)

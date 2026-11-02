@@ -49,9 +49,10 @@ full ICA-FIX workflow, run commands in this order:
 3. `train` creates a `.pyfix_model` from the labelled scans.
 4. `classify` applies that model to every prepared scan.
 5. `review` opens the classification review interface.
-6. `cleanup` applies the reviewed/classified component list and optionally
+6. `retrain` optionally creates a new model from reviewed classifications.
+7. `cleanup` applies the reviewed/classified component list and optionally
    smooths and censors the denoised data.
-7. `analyze` runs optional dual-regression and/or seed-based analyses on the
+8. `analyze` runs optional dual-regression and/or seed-based analyses on the
    cleaned, smoothed data.
 
 Alternatively, `import` creates an analysis-ready working directory from
@@ -150,6 +151,39 @@ fixrabies review \
 Classification writes
 `data/<scan>/fix4melview_mouse_awake_v1_thr20.txt`. Use the same model name
 and threshold for `review` and `cleanup`.
+
+### Retrain from reviewed classifications
+
+After review, train a revised model using the reviewed classification lists:
+
+```bash
+fixrabies retrain \
+  -fix_dir /path/to/fixrabies \
+  -old_fix_model mouse_awake_v1 \
+  -old_threshold 20 \
+  -new_fix_model mouse_awake_v2 \
+  -species mouseDSURQE
+```
+
+By default, retraining uses every scan in `data/`. To train from a selected
+subset, provide a JSON list of direct scan directories:
+
+```bash
+fixrabies retrain \
+  -fix_dir /path/to/fixrabies \
+  -old_fix_model mouse_awake_v1 \
+  -new_fix_model mouse_awake_v2 \
+  -scan_list '[
+    "/path/to/fixrabies/data/scan1",
+    "/path/to/fixrabies/data/scan2"
+  ]'
+```
+
+`retrain` validates the old classification output in every selected scan,
+copies its reviewed component list into `hand_labels_noise.txt`, writes the
+selected absolute paths to `model/training_set.txt`, and runs the normal
+training workflow to create `model/mouse_awake_v2.pyfix_model`. It overwrites
+the selected scans' hand-label files and the existing training-set list.
 
 ### Apply FIX cleanup
 
