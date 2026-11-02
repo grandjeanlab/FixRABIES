@@ -114,6 +114,12 @@ def run_analyze_command(args):
     run_analyze(args)
 
 
+def run_analyze_group_command(args):
+    from fixrabies.analyze_group import run_analyze_group
+
+    run_analyze_group(args)
+
+
 def run_import_command(args):
     from fixrabies.import_confound import run_import
 
@@ -708,6 +714,36 @@ Example:
 
 
 # ==============================================================================
+# Analyze group
+# ==============================================================================
+
+
+def add_analyze_group_parser(subparsers, common):
+    parser = subparsers.add_parser(
+        "analyze_group",
+        parents=[common],
+        formatter_class=FixFormatter,
+        help="Aggregate scan-level connectivity analyses.",
+    )
+    analysis = parser.add_argument_group("Analysis selection")
+    analysis.add_argument(
+        "-dr",
+        type=parse_boolean,
+        metavar="BOOLEAN",
+        default=True,
+        help="Aggregate dual-regression outputs.",
+    )
+    analysis.add_argument(
+        "-seed",
+        type=parse_boolean,
+        metavar="BOOLEAN",
+        default=False,
+        help="Aggregate seed-analysis outputs.",
+    )
+    parser.set_defaults(func=run_analyze_group_command)
+
+
+# ==============================================================================
 # Import (rabies confound)
 # ==============================================================================
 
@@ -811,6 +847,7 @@ to  implement FIX in rodents.
     add_review_parser(subparsers, common)
     add_cleanup_parser(subparsers, common)
     add_analyze_parser(subparsers, common)
+    add_analyze_group_parser(subparsers, common)
     add_import_parser(subparsers, common)
 
     return parser

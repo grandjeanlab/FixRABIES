@@ -54,6 +54,7 @@ full ICA-FIX workflow, run commands in this order:
    smooths and censors the denoised data.
 8. `analyze` runs optional dual-regression and/or seed-based analyses on the
    cleaned, smoothed data.
+9. `analyze_group` aggregates scan-level connectivity results.
 
 Alternatively, `import` creates an analysis-ready working directory from
 RABIES confound-correction outputs. Use this shorter path when FIX preparation,
@@ -281,6 +282,31 @@ fixrabies analyze \
   }'
 ```
 
+### Aggregate group analysis
+
+Aggregate completed scan-level results after `analyze`:
+
+```bash
+fixrabies analyze_group \
+  -fix_dir /path/to/fixrabies \
+  -dr True \
+  -seed False
+```
+
+Dual-regression aggregation is enabled by default. It requires every scan to
+contain `results/<scan>/dr/dr_stage2_subject00000.nii.gz`,
+`dr_stage2_subject00000_Z.nii.gz`, and `outcomes.csv`. It writes the scan
+order to `results_group/dr/scan_list.txt`; component-wise concatenated beta
+and Z maps; their group mean, standard deviation, one-sample t-statistic, and
+p-value maps; and one `outcomes_ic<N>.csv` table per component.
+
+Add `-seed True` to aggregate seed analysis. Every scan must then contain at
+least one `.nii.gz` image and `corr.txt` under `results/<scan>/seed/`.
+Component maps receive the same concatenated, mean, standard-deviation,
+t-statistic, and p-value outputs under `results_group/seed/`.
+`results_group/seed/corr.csv` has one row per scan and one column per
+seed-correlation matrix element.
+
 ## Output structure
 
 The working directory is the contract between commands:
@@ -314,6 +340,15 @@ The working directory is the contract between commands:
 │           ├── <seed>.nii.gz
 │           ├── <seed>_Z.nii.gz
 │           └── corr.txt
+├── results_group/
+│   ├── dr/
+│   │   ├── scan_list.txt
+│   │   ├── dr_stage2_ic<N>_concat.nii.gz
+│   │   ├── dr_stage2_ic<N>_concatZ.nii.gz
+│   │   └── outcomes_ic<N>.csv
+│   └── seed/
+│       ├── <seed>_concat.nii.gz
+│       └── corr.csv
 └── logs/
     ├── fixrabies.log
     └── <command>.log

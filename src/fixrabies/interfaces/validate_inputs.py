@@ -298,3 +298,35 @@ def get_pending_dual_regression_scans(fix_dir, scan_list):
             pending_scans.append(scan)
 
     return pending_scans
+
+
+def validate_group_analysis_outputs(fix_dir, scan_names, dr, seed):
+    if not dr and not seed:
+        raise ValueError("At least one of dr or seed must be True")
+    if len(scan_names) < 2:
+        raise ValueError("Group analysis requires at least two scans")
+
+    results_dir = Path(fix_dir).expanduser().resolve() / "results"
+    missing_files = []
+    if dr:
+        required_dr_files = [
+            "dr_stage2_subject00000.nii.gz",
+            "dr_stage2_subject00000_Z.nii.gz",
+            "outcomes.csv",
+        ]
+        missing_files.extend(
+            str(results_dir / scan_name / "dr" / filename)
+            for scan_name in scan_names
+            for filename in required_dr_files
+            if not (results_dir / scan_name / "dr" / filename).is_file()
+        )
+    if seed:
+        for scan_name in scan_names:
+            seed_dir = results_dir / scan_name / "seed"
+            if not any(seed_dir.glob("*.nii.gz")):
+                missing_files.append(f"{seed_dir}/*.nii.gz")
+            if not (seed_dir / "corr.txt").is_file():
+                missing_files.append(str(seed_dir / "corr.txt"))
+    if missing_files:
+        raise ValueError("Missing group-analysis inputs:\n" + "\n".join(missing_files))
+    return scan_names
