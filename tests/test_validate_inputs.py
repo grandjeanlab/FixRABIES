@@ -383,6 +383,7 @@ def test_analyze_workflow_configures_dual_regression():
         dr_template=template,
         seed_files=[],
         norm=True,
+        demean=True,
         dice_threshold=90,
         extract_threshold="15z",
         run_dual_regression=True,
@@ -392,6 +393,11 @@ def test_analyze_workflow_configures_dual_regression():
     assert dual_regression.inputs.des_norm is True
     assert dual_regression.inputs.one_sample_group_mean is True
     assert dual_regression.inputs.n_perm == 0
+    temporal_mean = workflow.get_node("temporal_mean")
+    demeaned_file = workflow.get_node("demeaned_file")
+    assert temporal_mean.interface.inputs.op_string == "-Tmean"
+    assert demeaned_file.interface.inputs.op_string == "-sub"
+    assert workflow._graph.has_edge(demeaned_file, dual_regression)
     outcomes = workflow.get_node("outcomes")
     assert outcomes.inputs.dice_threshold == 90
     assert outcomes.inputs.extract_threshold == "15z"
