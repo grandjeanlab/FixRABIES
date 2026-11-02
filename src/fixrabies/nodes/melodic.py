@@ -11,7 +11,7 @@ def melodic_node():
 
     node.inputs.approach = "tica"
     node.inputs.no_bet = True
-    node.inputs.no_mask = False
+    node.inputs.no_mask = True
     node.inputs.report = True
 
     return node

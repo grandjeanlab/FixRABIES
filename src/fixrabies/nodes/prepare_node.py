@@ -78,7 +78,7 @@ def prepare_fix_scan(
             template_file,
             outdir / "bg.nii.gz",
             interpolation="nearest",
-        ).to_filename(regdir / "ica.nii.gz")
+        ).to_filename(outdir / "ica.nii.gz")
 
     # ------------------------------------------------------------------
     # Convert motion file
