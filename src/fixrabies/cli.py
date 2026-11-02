@@ -567,15 +567,38 @@ a species-specific atlas is used.
 """,
     )
 
-    dr.add_argument(
-        "--norm",
-        action=argparse.BooleanOptionalAction,
+    norm_group = dr.add_mutually_exclusive_group()
+    norm_group.add_argument(
+        "-norm",
+        dest="norm",
+        action="store_true",
         default=True,
         help="Apply variance normalization.",
     )
+    norm_group.add_argument(
+        "-no_norm",
+        dest="norm",
+        action="store_false",
+        help="Disable variance normalization.",
+    )
+
+    demean_group = dr.add_mutually_exclusive_group()
+    demean_group.add_argument(
+        "-demean",
+        dest="demean",
+        action="store_true",
+        default=True,
+        help="Demean dual-regression data and seed GLM designs.",
+    )
+    demean_group.add_argument(
+        "-no_demean",
+        dest="demean",
+        action="store_false",
+        help="Do not demean dual-regression data or seed GLM designs.",
+    )
 
     dr.add_argument(
-        "--dice_threshold",
+        "-dice_threshold",
         type=float,
         metavar="PERCENT",
         default=90,
@@ -583,7 +606,7 @@ a species-specific atlas is used.
     )
 
     dr.add_argument(
-        "--extract_threshold",
+        "-extract_threshold",
         metavar="STRING",
         default="15z",
         help="DR extraction threshold",

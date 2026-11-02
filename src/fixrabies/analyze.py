@@ -6,6 +6,7 @@ logger = logging.getLogger("fixrabies.analyze")
 
 def run_analyze(args):
     from fixrabies.interfaces.validate_inputs import (
+        get_pending_dual_regression_scans,
         validate_analysis_files,
         validate_analysis_ica_files,
         validate_analysis_image,
@@ -13,7 +14,6 @@ def run_analyze(args):
         validate_data_directory,
         validate_dice_threshold,
         validate_extract_threshold,
-        get_pending_dual_regression_scans,
         validate_seed_files,
     )
     from fixrabies.workflows.analyze_wf import create_analyze_workflow
@@ -22,11 +22,7 @@ def run_analyze(args):
     logger.debug("Fix directory: %s", args.fix_dir)
 
     data_dir = Path(validate_data_directory(args.fix_dir))
-    scan_list = sorted(
-        str(path)
-        for path in data_dir.iterdir()
-        if path.is_dir()
-    )
+    scan_list = sorted(str(path) for path in data_dir.iterdir() if path.is_dir())
     validate_analysis_files(scan_list)
     validate_analysis_mask_files(scan_list)
     dr_template = (
@@ -52,15 +48,14 @@ def run_analyze(args):
             dr_template=dr_template,
             seed_files=seed_files,
             norm=args.norm,
+            demean=getattr(args, "demean", True),
             dice_threshold=dice_threshold,
             extract_threshold=extract_threshold,
             run_dual_regression=True,
         )
         workflow.run(plugin=plugin, plugin_args=nipype_args)
 
-    completed_scans = [
-        scan for scan in scan_list if scan not in pending_scans
-    ]
+    completed_scans = [scan for scan in scan_list if scan not in pending_scans]
     if completed_scans:
         validate_analysis_ica_files(completed_scans)
         outcomes_workflow = create_analyze_workflow(
@@ -69,6 +64,7 @@ def run_analyze(args):
             dr_template=dr_template,
             seed_files=seed_files,
             norm=args.norm,
+            demean=getattr(args, "demean", True),
             dice_threshold=dice_threshold,
             extract_threshold=extract_threshold,
             run_dual_regression=False,

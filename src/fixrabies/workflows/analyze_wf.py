@@ -2,7 +2,7 @@ from pathlib import Path
 
 from nipype import MapNode, Node, Workflow
 from nipype.interfaces.fsl.model import GLM, DualRegression
-from nipype.interfaces.fsl.utils import ImageMeants
+from nipype.interfaces.fsl.utils import ImageMaths, ImageMeants
 from nipype.interfaces.utility import Function, IdentityInterface
 
 from fixrabies.nodes.analyze import (
@@ -27,6 +27,7 @@ def create_analyze_workflow(
     dice_threshold,
     extract_threshold,
     run_dual_regression,
+    demean=True,
 ):
     infosource = Node(
         IdentityInterface(fields=["scan_dir"]),
@@ -63,6 +64,22 @@ def create_analyze_workflow(
         cleaned_file,
         "scan_dir",
     )
+    analysis_file_node = cleaned_file
+    analysis_file_output = "cleaned_file"
+    if demean and run_dual_regression:
+        temporal_mean = Node(
+            ImageMaths(op_string="-Tmean", suffix="_temporal_mean"),
+            name="temporal_mean",
+        )
+        demeaned_file = Node(
+            ImageMaths(op_string="-sub", suffix="_demeaned"),
+            name="demeaned_file",
+        )
+        workflow.connect(cleaned_file, "cleaned_file", temporal_mean, "in_file")
+        workflow.connect(cleaned_file, "cleaned_file", demeaned_file, "in_file")
+        workflow.connect(temporal_mean, "out_file", demeaned_file, "in_file2")
+        analysis_file_node = demeaned_file
+        analysis_file_output = "out_file"
     ica_file = Node(
         Function(
             input_names=["scan_dir"],
@@ -116,8 +133,8 @@ def create_analyze_workflow(
             name="dual_regression",
         )
         workflow.connect(
-            cleaned_file,
-            "cleaned_file",
+            analysis_file_node,
+            analysis_file_output,
             dual_regression,
             "in_files",
         )
@@ -222,7 +239,7 @@ def create_analyze_workflow(
         glm = MapNode(
             GLM(
                 dat_norm=norm,
-                demean=True,
+                demean=demean,
                 des_norm=True,
             ),
             iterfield=["design", "out_file", "out_z_name"],
