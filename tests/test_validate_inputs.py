@@ -257,6 +257,7 @@ def test_run_cleanup_creates_iterable_workflow():
         aggressive=True,
         highpass=100,
         smooth=0,
+        mask=True,
         DVARS_threshold=2,
         FD_threshold=0.1,
         nipype={"plugin": "Linear"},
@@ -289,6 +290,7 @@ def test_run_cleanup_creates_iterable_workflow():
         dvars_threshold=2,
         fd_threshold=0.1,
         smooth=0,
+        mask=True,
     )
     create_post_cleanup_workflow.return_value.run.assert_called_once_with(
         plugin="Linear",
@@ -327,11 +329,11 @@ def test_save_exclusion_file():
             scan_dir=scan_dir,
         )
         assert output_file.read_text(encoding="utf-8").splitlines() == [
-            "DVARS,MeanFD,DVARS_selection,FD_selection",
-            "0,0.0,0,0",
-            "3,0.0,1,0",
-            "0,0.2,0,1",
-            "3,0.2,1,1",
+            "DVARS,MeanFD,DVARS_selection,FD_selection,Combined_selection",
+            "0,0.0,0,0,0",
+            "3,0.0,1,0,1",
+            "0,0.2,0,1,1",
+            "3,0.2,1,1,1",
         ]
     finally:
         if original is None:

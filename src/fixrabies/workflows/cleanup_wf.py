@@ -6,13 +6,15 @@ from nipype.interfaces.utility import Function, IdentityInterface
 from fixrabies.nodes.cleanup import (
     cleanup_node,
     estimate_dvars,
-    get_cleaned_file,
     get_artifact_list_file,
+    get_cleaned_file,
     get_fd_file,
     get_kept_volumes,
+    get_mask_file,
     get_mean_fd,
-    save_exclusion_file,
+    mask_smoothed_image,
     save_censored_image,
+    save_exclusion_file,
     smooth_image,
 )
 
@@ -71,6 +73,7 @@ def create_post_cleanup_workflow(
     dvars_threshold,
     fd_threshold,
     smooth,
+    mask,
 ):
     infosource = Node(
         IdentityInterface(fields=["scan_dir"]),
@@ -152,6 +155,27 @@ def create_post_cleanup_workflow(
         name="smoothed_image",
     )
     smoothed_image.inputs.smooth = smooth
+    processing_file = smoothed_image
+    processing_file_output = "smoothed_image"
+    if mask:
+        mask_file = Node(
+            Function(
+                input_names=["scan_dir"],
+                output_names=["mask_file"],
+                function=get_mask_file,
+            ),
+            name="mask_file",
+        )
+        masked_image = Node(
+            Function(
+                input_names=["smoothed_image", "mask_file"],
+                output_names=["masked_file"],
+                function=mask_smoothed_image,
+            ),
+            name="masked_image",
+        )
+        processing_file = masked_image
+        processing_file_output = "masked_file"
     censored_image = Node(
         Function(
             input_names=[
@@ -229,9 +253,18 @@ def create_post_cleanup_workflow(
         smoothed_image,
         "cleaned_file",
     )
+    if mask:
+        workflow.connect(infosource, "scan_dir", mask_file, "scan_dir")
+        workflow.connect(
+            smoothed_image,
+            "smoothed_image",
+            masked_image,
+            "smoothed_image",
+        )
+        workflow.connect(mask_file, "mask_file", masked_image, "mask_file")
     workflow.connect(
-        smoothed_image,
-        "smoothed_image",
+        processing_file,
+        processing_file_output,
         censored_image,
         "smoothed_image",
     )

@@ -6,6 +6,7 @@ logger = logging.getLogger("fixrabies.cleanup")
 
 def run_cleanup(args):
     from fixrabies.interfaces.validate_inputs import (
+        validate_analysis_mask_files,
         validate_classification_outputs,
         validate_cleanup_files,
         validate_data_directory,
@@ -24,12 +25,10 @@ def run_cleanup(args):
     logger.debug("Threshold: %s", args.threshold)
 
     data_dir = Path(validate_data_directory(args.fix_dir))
-    scan_list = sorted(
-        str(path)
-        for path in data_dir.iterdir()
-        if path.is_dir()
-    )
+    scan_list = sorted(str(path) for path in data_dir.iterdir() if path.is_dir())
     validate_feature_files(scan_list)
+    if getattr(args, "mask", True):
+        validate_analysis_mask_files(scan_list)
     validate_trained_model(args.fix_dir, args.fix_model)
     threshold = validate_select_label(args.threshold)
     validate_classification_outputs(scan_list, args.fix_model, threshold)
@@ -54,6 +53,7 @@ def run_cleanup(args):
         dvars_threshold=args.DVARS_threshold,
         fd_threshold=args.FD_threshold,
         smooth=args.smooth,
+        mask=getattr(args, "mask", True),
     )
     post_cleanup_workflow.run(
         plugin=plugin,
