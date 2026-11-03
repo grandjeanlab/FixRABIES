@@ -52,6 +52,13 @@ class FixFormatter(
     """Custom argparse formatter."""
 
 
+class JsonDefault(dict):
+    def __str__(self) -> str:
+        return json.dumps(self)
+
+    __repr__ = __str__
+
+
 def parse_boolean(value: str) -> bool:
     normalized_value = value.lower()
     if normalized_value == "true":
@@ -153,7 +160,7 @@ be saved below this directory.
         type=json.loads,
         metavar="JSON",
         default={
-            "plugin": "MultiProc",
+            "plugin": "Linear",
         },
         help="""
 Nipype execution settings.
@@ -163,7 +170,7 @@ Example:
 -nipype '{
     "plugin": "MultiProc",
     "n_procs": 4,
-    "memory_gb": 16
+    "memory_gb": 32
 }'
 """,
     )
@@ -263,12 +270,14 @@ TR from preprocessing outputs.
         "-patch_denoise",
         type=json.loads,
         metavar="JSON",
-        default={
-            "apply": False,
-            "method": "optimal-fro",
-            "patch_shape": [11, 11, 11, -1],
-            "patch_overlap": [5, 5, 5, -1],
-        },
+        default=JsonDefault(
+            {
+                "apply": False,
+                "method": "optimal-fro",
+                "patch_shape": [11, 11, 11, -1],
+                "patch_overlap": [5, 5, 5, -1],
+            }
+        ),
         help="""
 Patch denoising configuration.
 
@@ -699,10 +708,7 @@ a species-specific atlas is used.
         "-seed",
         type=json.loads,
         metavar="JSON",
-        default={
-            "apply": False,
-            "seeds": [],
-        },
+        default=JsonDefault({"apply": False, "seeds": []}),
         help="""
 Seed based analysis.
 
