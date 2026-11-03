@@ -193,16 +193,18 @@ fixrabies cleanup \
   -fix_dir /path/to/fixrabies \
   -fix_model mouse_awake_v1 \
   -threshold 20 \
-  -smooth 0.3 \
-  -FD_threshold 0.075 \
-  -DVARS_threshold 1.5
+  -smooth 0.5 \
+  -FD_threshold 0.3 \
+  -DVARS_threshold 0.5
 ```
 
 `cleanup` applies FIX to every classified scan, then writes
 `filtered_func_data_clean_smoothed.nii.gz`. It computes DVARS, reads the
 `MeanFD` column from `fd.csv`, and writes `exclude.csv` with the metrics and
 their selections. Set either threshold to `0` to disable that censoring
-criterion. Optional FIX flags are:
+criterion. By default, the smoothed image is masked with `mask.nii.gz` before
+censoring; pass `-mask False` to disable masking.
+Optional FIX flags are:
 
 ```bash
 -motionhp              # add motion-parameter regression
