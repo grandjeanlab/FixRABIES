@@ -45,11 +45,8 @@ def mask_smoothed_image(smoothed_image, mask_file):
     import nibabel as nib
     import numpy as np
 
-    cleaned_image = (
-        nib.load(smoothed_image)
-        if isinstance(smoothed_image, (str, Path))
-        else smoothed_image
-    )
+    output_file = Path.cwd() / "masked_image.nii.gz"
+    cleaned_image = nib.load(smoothed_image)
     mask_image = nib.load(mask_file)
     cleaned_data = cleaned_image.get_fdata(dtype="float32")
     mask_data = mask_image.get_fdata() > 0
@@ -60,11 +57,12 @@ def mask_smoothed_image(smoothed_image, mask_file):
             "Cleaned image and mask do not share spatial dimensions: "
             f"{cleaned_data.shape[:3]} and {mask_data.shape}"
         )
-    return nib.Nifti1Image(
+    nib.Nifti1Image(
         cleaned_data * mask_data[..., np.newaxis],
         cleaned_image.affine,
         cleaned_image.header,
-    )
+    ).to_filename(output_file)
+    return str(output_file)
 
 
 def estimate_dvars(cleaned_file):
@@ -162,9 +160,13 @@ def save_exclusion_file(
 
 
 def smooth_image(cleaned_file, smooth):
+    from pathlib import Path
+
     from nilearn.image import smooth_img
 
-    return smooth_img(cleaned_file, fwhm=smooth)
+    output_file = Path.cwd() / "smoothed_image.nii.gz"
+    smooth_img(cleaned_file, fwhm=smooth).to_filename(output_file)
+    return str(output_file)
 
 
 def save_censored_image(smoothed_image, kept_volumes, scan_dir):
