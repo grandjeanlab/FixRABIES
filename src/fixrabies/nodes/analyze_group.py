@@ -29,6 +29,7 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
             axis=-1,
             nan_policy="omit",
         )
+        p_data = 1 - p_data
         affine = images[0].affine
         header = images[0].header
         output_dir.mkdir(parents=True, exist_ok=True)
