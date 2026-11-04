@@ -161,8 +161,7 @@ class ComponentLabeler(QMainWindow):
         layout.addLayout(navigation_layout)
 
     def _set_dark_theme(self) -> None:
-        self.setStyleSheet(
-            """
+        self.setStyleSheet("""
             QMainWindow, QWidget { background-color: #202124; color: #e8eaed; }
             QLineEdit, QComboBox {
                 background-color: #303134; border: 1px solid #5f6368;
@@ -173,8 +172,7 @@ class ComponentLabeler(QMainWindow):
                 border-radius: 4px; padding: 7px 14px; color: #e8eaed;
             }
             QPushButton:hover { background-color: #4a4e52; }
-            """
-        )
+            """)
 
     def _select_scan(self, index: int) -> None:
         self.scan_index = index

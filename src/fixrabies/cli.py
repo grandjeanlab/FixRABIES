@@ -264,6 +264,17 @@ TR from preprocessing outputs.
 """,
     )
 
+    prep.add_argument(
+        "-FD_threshold",
+        type=float,
+        default=0,
+        metavar="VALUE",
+        help=(
+            "Remove volumes with MeanFD above this threshold during "
+            "preparation. Set to 0 to disable."
+        ),
+    )
+
     patch = parser.add_argument_group("Patch denoising (requires [patch])")
 
     patch.add_argument(

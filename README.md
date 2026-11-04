@@ -89,6 +89,13 @@ fixrabies prepare \
 writes the files needed by FIX. Use `-patch_denoise '{"apply": true, ...}'`
 when the optional patch-denoising dependency is installed.
 
+Use `-FD_threshold VALUE` to remove frames whose `MeanFD` exceeds `VALUE`
+before MELODIC. Preparation removes those frames from both
+`filtered_func_data.nii.gz` and `fd.csv`, updates `design.fsf`, and records
+the original frame index, every original FD column, and selection in
+`prepare_exclude.csv`.
+`-FD_threshold 0` (the default) disables frame removal.
+
 ### Label training scans
 
 ```bash

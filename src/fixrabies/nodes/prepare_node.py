@@ -5,8 +5,8 @@ def prepare_fix_scan(
     patch_denoise,
     species,
 ):
-    from importlib.resources import as_file, files
     import shutil
+    from importlib.resources import as_file, files
     from pathlib import Path
 
     import nibabel as nib
@@ -123,6 +123,88 @@ def prepare_fix_scan(
         )
 
     return str(outdir), str(filtered_func_data)
+
+
+def censor_frames_by_fd(filtered_func_data, scan_dir, fd_threshold):
+    from pathlib import Path
+
+    import nibabel as nib
+    import numpy as np
+    import pandas as pd
+
+    scan_dir = Path(scan_dir)
+    fd_file = scan_dir / "fd.csv"
+    motion_file = scan_dir / "mc" / "prefiltered_func_data_mcf.par"
+    fd_data = pd.read_csv(fd_file)
+    if "MeanFD" not in fd_data:
+        raise ValueError(f"Missing MeanFD column in: {fd_file}")
+    if fd_threshold < 0:
+        raise ValueError(
+            f"FD_threshold must be greater than or equal to 0, got {fd_threshold}"
+        )
+
+    image = nib.load(filtered_func_data)
+    image_data = image.get_fdata(dtype="float32")
+    if image_data.ndim != 4:
+        raise ValueError(f"Prepared functional image is not 4D: {filtered_func_data}")
+    if len(fd_data) != image_data.shape[3]:
+        raise ValueError(
+            "FD rows and functional-image volumes must match, got "
+            f"{len(fd_data)} and {image_data.shape[3]}"
+        )
+    motion_data = pd.read_csv(motion_file, sep="\t", header=None)
+    if len(motion_data) != image_data.shape[3]:
+        raise ValueError(
+            "Motion rows and functional-image volumes must match, got "
+            f"{len(motion_data)} and {image_data.shape[3]}"
+        )
+
+    fd_selection = (
+        fd_data["MeanFD"].to_numpy() > fd_threshold
+        if fd_threshold > 0
+        else np.zeros(len(fd_data), dtype=bool)
+    )
+    kept_volumes = np.flatnonzero(~fd_selection)
+    if not len(kept_volumes):
+        raise ValueError(
+            f"FD_threshold {fd_threshold} excludes every volume in {scan_dir}"
+        )
+
+    prepare_exclude = fd_data.copy()
+    prepare_exclude.insert(0, "Frame", np.arange(len(fd_data)))
+    prepare_exclude["FD_selection"] = fd_selection.astype(int)
+    prepare_exclude.to_csv(scan_dir / "prepare_exclude.csv", index=False)
+    fd_data.loc[~fd_selection].to_csv(fd_file, index=False)
+    motion_data.loc[~fd_selection].to_csv(
+        motion_file,
+        sep="\t",
+        header=False,
+        index=False,
+        float_format="%.10f",
+    )
+
+    output_file = Path(filtered_func_data)
+    nib.Nifti1Image(
+        image_data[..., kept_volumes],
+        image.affine,
+        image.header,
+    ).to_filename(output_file)
+    design_file = scan_dir / "design.fsf"
+    if design_file.is_file():
+        design_file.write_text(
+            "\n".join(
+                (
+                    f"set fmri(npts) {len(kept_volumes)}"
+                    if line.startswith("set fmri(npts)")
+                    else line
+                )
+                for line in design_file.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    return str(output_file)
 
 
 def get_scan_info(scan_id, scans):

@@ -34,6 +34,7 @@ def run_prepare(args):
         fix_dir=args.fix_dir,
         patch_denoise=args.patch_denoise,
         species=args.species,
+        fd_threshold=args.FD_threshold,
     )
     nipype_args = args.nipype.copy()
     plugin = nipype_args.pop("plugin")

@@ -2,6 +2,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import nibabel as nib
+import numpy as np
+import pandas as pd
 import pytest
 
 from fixrabies.analyze import run_analyze
@@ -37,6 +40,7 @@ from fixrabies.nodes.cleanup import (
     get_kept_volumes,
     save_exclusion_file,
 )
+from fixrabies.nodes.prepare_node import censor_frames_by_fd
 from fixrabies.review import run_review
 from fixrabies.train import run_train
 from fixrabies.workflows.analyze_wf import create_analyze_workflow
@@ -60,6 +64,63 @@ def test_validate_label_inputs():
         == (fix_dir / "model" / "training_set.txt")
         .read_text(encoding="utf-8")
         .splitlines()
+    )
+
+
+def test_censor_frames_by_fd_keeps_bold_and_fd_rows_aligned(tmp_path):
+    scan_dir = tmp_path / "scan"
+    scan_dir.mkdir()
+    image_file = scan_dir / "filtered_func_data.nii.gz"
+    image_data = np.arange(32, dtype=np.float32).reshape(2, 2, 2, 4)
+    nib.Nifti1Image(image_data, np.eye(4)).to_filename(image_file)
+    pd.DataFrame(
+        {
+            "MeanFD": [0.05, 0.2, 0.1, 0.4],
+            "Other": [1, 2, 3, 4],
+        }
+    ).to_csv(scan_dir / "fd.csv", index=False)
+    motion_dir = scan_dir / "mc"
+    motion_dir.mkdir()
+    pd.DataFrame(
+        {
+            0: [1, 2, 3, 4],
+            1: [5, 6, 7, 8],
+        }
+    ).to_csv(
+        motion_dir / "prefiltered_func_data_mcf.par",
+        sep="\t",
+        header=False,
+        index=False,
+    )
+    (scan_dir / "design.fsf").write_text(
+        "set fmri(tr) 1\nset fmri(npts) 4\n",
+        encoding="utf-8",
+    )
+
+    censor_frames_by_fd(image_file, scan_dir, 0.1)
+
+    assert nib.load(image_file).shape == (2, 2, 2, 2)
+    assert np.array_equal(
+        nib.load(image_file).get_fdata(),
+        image_data[..., [0, 2]],
+    )
+    assert pd.read_csv(scan_dir / "fd.csv").to_dict("list") == {
+        "MeanFD": [0.05, 0.1],
+        "Other": [1, 3],
+    }
+    assert pd.read_csv(
+        motion_dir / "prefiltered_func_data_mcf.par",
+        sep="\t",
+        header=None,
+    ).to_dict("list") == {0: [1.0, 3.0], 1: [5.0, 7.0]}
+    assert pd.read_csv(scan_dir / "prepare_exclude.csv").to_dict("list") == {
+        "Frame": [0, 1, 2, 3],
+        "MeanFD": [0.05, 0.2, 0.1, 0.4],
+        "Other": [1, 2, 3, 4],
+        "FD_selection": [0, 1, 0, 1],
+    }
+    assert (scan_dir / "design.fsf").read_text(encoding="utf-8") == (
+        "set fmri(tr) 1\nset fmri(npts) 2\n"
     )
 
 

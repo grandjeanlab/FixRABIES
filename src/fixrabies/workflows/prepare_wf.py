@@ -3,7 +3,7 @@ from pathlib import Path
 from nipype import Node, Workflow
 from nipype.interfaces.fsl.fix import FeatureExtractor
 from nipype.interfaces.utility import Function, IdentityInterface
-from fixrabies.nodes.prepare_node import get_bold_file, get_scan_info, prepare_fix_scan
+
 from fixrabies.nodes.denoise_node import (
     denoise_input_node,
     denoise_tofile_node,
@@ -14,6 +14,12 @@ from fixrabies.nodes.melodic import (
     get_melodic_out_dir,
     hand_labels_noise_node,
     melodic_node,
+)
+from fixrabies.nodes.prepare_node import (
+    censor_frames_by_fd,
+    get_bold_file,
+    get_scan_info,
+    prepare_fix_scan,
 )
 
 
@@ -26,6 +32,7 @@ def create_prepare_fix_workflow(
     fix_dir,
     patch_denoise,
     species,
+    fd_threshold=0,
 ):
 
     scan_ids = sorted(scans.keys())
@@ -87,6 +94,16 @@ def create_prepare_fix_workflow(
     prepare.inputs.fix_dir = str(fix_dir)
     prepare.inputs.patch_denoise = patch_denoise
     prepare.inputs.species = species
+
+    censor_frames = Node(
+        Function(
+            input_names=["filtered_func_data", "scan_dir", "fd_threshold"],
+            output_names=["censored_file"],
+            function=censor_frames_by_fd,
+        ),
+        name="censor_frames",
+    )
+    censor_frames.inputs.fd_threshold = fd_threshold
 
     melodic_metadata = Node(
         Function(
@@ -234,6 +251,7 @@ def create_prepare_fix_workflow(
         melodic_complete,
         "mel_ica",
     )
+    wf.connect(prepare, "outdir", censor_frames, "scan_dir")
 
     wf.connect(
         melodic_complete,
@@ -293,6 +311,12 @@ def create_prepare_fix_workflow(
         wf.connect(
             save_denoised,
             "filtered_func_data",
+            censor_frames,
+            "filtered_func_data",
+        )
+        wf.connect(
+            censor_frames,
+            "censored_file",
             melodic,
             "in_files",
         )
@@ -300,6 +324,12 @@ def create_prepare_fix_workflow(
         wf.connect(
             prepare,
             "filtered_func_data",
+            censor_frames,
+            "filtered_func_data",
+        )
+        wf.connect(
+            censor_frames,
+            "censored_file",
             melodic,
             "in_files",
         )
