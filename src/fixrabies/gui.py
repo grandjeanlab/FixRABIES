@@ -136,7 +136,8 @@ class ComponentLabeler(QMainWindow):
             ("Unsure", "unsure"),
             ("Signal", "signal"),
         ):
-            button = QPushButton(label)
+            button = QPushButton(f"{label} [{rating[0].upper()}]")
+            button.setShortcut(rating[0].upper())
             button.clicked.connect(
                 lambda checked=False, value=rating: self._record_rating(value)
             )
@@ -144,11 +145,14 @@ class ComponentLabeler(QMainWindow):
         layout.addLayout(rating_layout)
 
         navigation_layout = QHBoxLayout()
-        back_button = QPushButton("Back")
+        back_button = QPushButton("Back [B]")
+        back_button.setShortcut("B")
         back_button.clicked.connect(self._go_back)
-        forward_button = QPushButton("Forward")
+        forward_button = QPushButton("Forward [F]")
+        forward_button.setShortcut("F")
         forward_button.clicked.connect(self._go_forward)
-        quit_button = QPushButton("Quit")
+        quit_button = QPushButton("Quit [Q]")
+        quit_button.setShortcut("Q")
         quit_button.clicked.connect(self.close)
         navigation_layout.addWidget(back_button)
         navigation_layout.addWidget(forward_button)
