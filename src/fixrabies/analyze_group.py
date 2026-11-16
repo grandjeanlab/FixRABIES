@@ -18,6 +18,7 @@ def run_analyze_group(args):
     scan_names = sorted(path.name for path in data_dir.iterdir() if path.is_dir())
     validate_group_analysis_outputs(
         args.fix_dir,
+        args.result_dir,
         scan_names,
         args.dr,
         args.seed,
@@ -25,6 +26,7 @@ def run_analyze_group(args):
 
     workflow = create_analyze_group_workflow(
         fix_dir=args.fix_dir,
+        result_dir=args.result_dir,
         scan_names=scan_names,
         dr=args.dr,
         seed=args.seed,

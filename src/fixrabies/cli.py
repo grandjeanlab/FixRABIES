@@ -670,6 +670,14 @@ def add_analyze_parser(subparsers, common):
 
     dr = parser.add_argument_group("Dual regression")
 
+    parser.add_argument(
+        "-result_dir",
+        type=Path,
+        default=Path("results"),
+        metavar="PATH",
+        help="Directory for scan-level analysis results, relative to -fix_dir.",
+    )
+
     dr.add_argument(
         "-DR_template",
         type=Path,
@@ -749,6 +757,16 @@ def add_analyze_group_parser(subparsers, common):
         parents=[common],
         formatter_class=FixFormatter,
         help="Aggregate scan-level connectivity analyses.",
+    )
+    parser.add_argument(
+        "-result_dir",
+        type=Path,
+        default=Path("results"),
+        metavar="PATH",
+        help=(
+            "Scan-level analysis results directory, relative to -fix_dir. "
+            "Group results are written to <result_dir>_group."
+        ),
     )
     analysis = parser.add_argument_group("Analysis selection")
     analysis.add_argument(

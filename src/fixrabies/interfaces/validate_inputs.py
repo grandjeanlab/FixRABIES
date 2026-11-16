@@ -287,8 +287,8 @@ def validate_dice_threshold(dice_threshold):
     return dice_threshold
 
 
-def get_pending_dual_regression_scans(fix_dir, scan_list):
-    results_dir = Path(fix_dir) / "results"
+def get_pending_dual_regression_scans(fix_dir, result_dir, scan_list):
+    results_dir = Path(fix_dir) / result_dir
     pending_scans = []
     for scan in scan_list:
         dr_dir = results_dir / Path(scan).name / "dr"
@@ -300,13 +300,13 @@ def get_pending_dual_regression_scans(fix_dir, scan_list):
     return pending_scans
 
 
-def validate_group_analysis_outputs(fix_dir, scan_names, dr, seed):
+def validate_group_analysis_outputs(fix_dir, result_dir, scan_names, dr, seed):
     if not dr and not seed:
         raise ValueError("At least one of dr or seed must be True")
     if len(scan_names) < 2:
         raise ValueError("Group analysis requires at least two scans")
 
-    results_dir = Path(fix_dir).expanduser().resolve() / "results"
+    results_dir = Path(fix_dir).expanduser().resolve() / result_dir
     missing_files = []
     if dr:
         required_dr_files = [

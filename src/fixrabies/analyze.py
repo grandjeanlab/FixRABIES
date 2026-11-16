@@ -37,6 +37,7 @@ def run_analyze(args):
     extract_threshold = validate_extract_threshold(args.extract_threshold)
     pending_scans = get_pending_dual_regression_scans(
         args.fix_dir,
+        args.result_dir,
         scan_list,
     )
     nipype_args = args.nipype.copy()
@@ -44,6 +45,7 @@ def run_analyze(args):
     if pending_scans:
         workflow = create_analyze_workflow(
             fix_dir=args.fix_dir,
+            result_dir=args.result_dir,
             scan_list=pending_scans,
             dr_template=dr_template,
             seed_files=seed_files,
@@ -57,6 +59,7 @@ def run_analyze(args):
 
     remaining_pending_scans = get_pending_dual_regression_scans(
         args.fix_dir,
+        args.result_dir,
         scan_list,
     )
     completed_scans = [
@@ -66,6 +69,7 @@ def run_analyze(args):
         validate_analysis_ica_files(completed_scans)
         outcomes_workflow = create_analyze_workflow(
             fix_dir=args.fix_dir,
+            result_dir=args.result_dir,
             scan_list=completed_scans,
             dr_template=dr_template,
             seed_files=seed_files,

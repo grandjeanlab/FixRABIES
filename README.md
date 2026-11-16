@@ -276,6 +276,8 @@ z-score such as `7.5z`. Existing dual-regression stage-2 maps are reused, but
 the outcome report is still generated.
 Variance normalization and demeaning are enabled by default. Set `-norm False`
 or `-demean False` to disable either option.
+Scan-level outputs are written to `results/` by default; use
+`-result_dir PATH` to select another directory.
 
 Add seed-based analyses with a JSON list of seed masks:
 

@@ -20,6 +20,7 @@ from fixrabies.nodes.analyze import (
 
 def create_analyze_workflow(
     fix_dir,
+    result_dir,
     scan_list,
     dr_template,
     seed_files,
@@ -51,7 +52,7 @@ def create_analyze_workflow(
         ),
         name="analysis_directories",
     )
-    analysis_directories.inputs.results_dir = str(Path(fix_dir) / "results")
+    analysis_directories.inputs.results_dir = str(Path(fix_dir) / result_dir)
     analysis_directories.inputs.seed_analysis = bool(seed_files)
 
     workflow = Workflow(

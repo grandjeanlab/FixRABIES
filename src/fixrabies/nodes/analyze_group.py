@@ -1,4 +1,4 @@
-def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
+def aggregate_group_analysis(fix_dir, result_dir, scan_names, dr, seed):
     from pathlib import Path
 
     import nibabel as nib
@@ -6,8 +6,8 @@ def aggregate_group_analysis(fix_dir, scan_names, dr, seed):
     import pandas as pd
     from scipy.stats import ttest_1samp
 
-    results_dir = Path(fix_dir) / "results"
-    group_dir = Path(fix_dir) / "results_group"
+    results_dir = Path(fix_dir).expanduser().resolve() / result_dir
+    group_dir = results_dir.with_name(f"{results_dir.name}_group")
 
     def save_group_maps(files, output_dir, output_stem, z_map=False):
         images = [nib.load(file) for file in files]

@@ -442,6 +442,7 @@ def test_analyze_workflow_configures_dual_regression():
 
     workflow = create_analyze_workflow(
         fix_dir=fix_dir,
+        result_dir=Path("results"),
         scan_list=scan_list,
         dr_template=template,
         seed_files=[],
@@ -473,6 +474,7 @@ def test_analyze_workflow_uses_scan_ica_without_template():
 
     workflow = create_analyze_workflow(
         fix_dir=fix_dir,
+        result_dir=Path("results"),
         scan_list=scan_list,
         dr_template=None,
         seed_files=[],
@@ -492,6 +494,7 @@ def test_analyze_outcomes_workflow_skips_dual_regression():
 
     workflow = create_analyze_workflow(
         fix_dir=fix_dir,
+        result_dir=Path("results"),
         scan_list=scan_list,
         dr_template=None,
         seed_files=[],
@@ -560,6 +563,7 @@ def test_analyze_workflow_configures_seed_analysis():
 
     workflow = create_analyze_workflow(
         fix_dir=fix_dir,
+        result_dir=Path("results"),
         scan_list=scan_list,
         dr_template=None,
         seed_files=[seed_file],
@@ -610,7 +614,7 @@ def test_get_pending_dual_regression_scans():
         str(path) for path in (fix_dir / "data").iterdir() if path.is_dir()
     )
 
-    assert get_pending_dual_regression_scans(fix_dir, scan_list) == []
+    assert get_pending_dual_regression_scans(fix_dir, Path("results"), scan_list) == []
 
 
 def test_run_analyze_creates_workflow():
@@ -618,6 +622,7 @@ def test_run_analyze_creates_workflow():
     template = Path("src/fixrabies/templates/mouseDSURQE/ica.nii.gz").resolve()
     args = SimpleNamespace(
         fix_dir=fix_dir,
+        result_dir=Path("results"),
         DR_template=template,
         seed={"apply": False, "seeds": []},
         norm=True,
@@ -631,13 +636,14 @@ def test_run_analyze_creates_workflow():
         ) as create_workflow,
         patch(
             "fixrabies.interfaces.validate_inputs.get_pending_dual_regression_scans",
-            side_effect=lambda _, scans: scans,
+            side_effect=lambda _, __, scans: scans,
         ),
     ):
         run_analyze(args)
 
     workflow_args = create_workflow.call_args.kwargs
     assert workflow_args["fix_dir"] == fix_dir
+    assert workflow_args["result_dir"] == Path("results")
     assert workflow_args["scan_list"]
     assert workflow_args["dr_template"] == str(template)
     assert workflow_args["seed_files"] == []
@@ -655,6 +661,7 @@ def test_run_analyze_runs_outcomes_for_completed_scans():
     fix_dir = Path("~/test").expanduser()
     args = SimpleNamespace(
         fix_dir=fix_dir,
+        result_dir=Path("results"),
         DR_template=None,
         seed={"apply": False, "seeds": []},
         norm=True,
@@ -669,6 +676,7 @@ def test_run_analyze_runs_outcomes_for_completed_scans():
 
     workflow_args = create_workflow.call_args.kwargs
     assert workflow_args["scan_list"]
+    assert workflow_args["result_dir"] == Path("results")
     assert workflow_args["run_dual_regression"] is False
     create_workflow.return_value.run.assert_called_once_with(
         plugin="Linear",
