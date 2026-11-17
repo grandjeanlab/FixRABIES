@@ -2,7 +2,7 @@ from fixrabies.interfaces.prepare_rabies import prepare_rabies
 
 
 def test_prepare_rabies():
-    scans = prepare_rabies("~/test/preprocessing")
+    scans = prepare_rabies("~/test/preprocessing", 1.2)
 
     assert isinstance(scans, dict)
     assert len(scans) > 0

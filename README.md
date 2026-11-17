@@ -82,7 +82,8 @@ fixrabies prepare \
 fixrabies prepare \
   -preprocess_dir /path/to/rabies \
   -fix_dir /path/to/fixrabies \
-  -species mouseDSURQE
+  -species mouseDSURQE \
+  -tr 1.2
 ```
 
 `prepare` reads RABIES outputs, creates `data/<scan>/`, runs MELODIC, and

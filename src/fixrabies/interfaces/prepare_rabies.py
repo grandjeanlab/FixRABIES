@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 
-def prepare_rabies(preprocess_dir):
+def prepare_rabies(preprocess_dir, tr):
     """
     Returns
 
@@ -66,8 +66,6 @@ def prepare_rabies(preprocess_dir):
             )
         )
 
-        tr = get_tr(preprocess_dir)
-
         scans[scan_id] = {
             "bold_file": str(bold_file),
             "fd": str(fd_matches[0]) if fd_matches else None,
@@ -94,35 +92,6 @@ def prepare_rabies(preprocess_dir):
         }
 
     return scans
-
-
-def get_tr(preprocess_dir):
-    """
-    Read TR from:
-
-        {preprocess_dir}/rabies_preprocess.log
-
-    looking for lines such as:
-
-        TR = 1.2
-        -> TR = 1.2
-
-    Returns
-    -------
-    float
-    """
-
-    log_file = Path(preprocess_dir) / "rabies_preprocess.log"
-
-    assert log_file.exists(), f"Missing RABIES log file: {log_file}"
-
-    with open(log_file) as f:
-        for line in f:
-            match = re.search(r"->\s*TR\s*=\s*([0-9.]+)", line)
-            if match:
-                return float(match.group(1))
-
-    raise ValueError(f"Could not find TR in {log_file}")
 
 
 def validate_scans(scans):

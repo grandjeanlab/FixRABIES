@@ -26,7 +26,7 @@ def run_prepare(args):
             f"Unsupported preprocessing software: {args.preprocess_software}"
         )
 
-    scans = prepare_rabies(args.preprocess_dir)
+    scans = prepare_rabies(args.preprocess_dir, args.tr)
     validate_scans(scans)
 
     workflow = create_prepare_fix_workflow(

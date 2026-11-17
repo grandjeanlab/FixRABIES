@@ -254,13 +254,11 @@ Currently only RABIES is supported.
 
     prep.add_argument(
         "-tr",
+        required=True,
         type=float,
         metavar="SECONDS",
         help="""
-Repetition time.
-
-If omitted, FixRABIES will attempt to infer
-TR from preprocessing outputs.
+Repetition time in seconds.
 """,
     )
 
