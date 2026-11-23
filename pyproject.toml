@@ -37,6 +37,11 @@ fixrabies = "fixrabies.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.pytest.ini_options]
+markers = [
+    "environment: checks external executables required for running workflows",
+]
+
 [tool.uv]
 required-environments = [
     "sys_platform == 'linux' and platform_machine == 'x86_64'"
