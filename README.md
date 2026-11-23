@@ -285,14 +285,15 @@ Add seed-based analyses with a JSON list of seed masks:
 ```bash
 fixrabies analyze \
   -fix_dir /path/to/fixrabies \
-  -seed '{
-    "apply": true,
-    "seeds": [
-      "/path/to/acc.nii.gz",
-      "/path/to/thalamus.nii.gz"
-    ]
-  }'
+  -seed '[
+    "/path/to/acc.nii.gz",
+    "/path/to/thalamus.nii.gz"
+  ]'
 ```
+
+Seed paths must point to existing files. Relative paths and `~` are expanded
+and resolved to absolute paths. Omitting `-seed` or passing `-seed '[]'`
+disables seed analysis; a non-empty list enables it.
 
 ### Aggregate group analysis
 
@@ -379,3 +380,39 @@ The full ICA-FIX workflow creates all listed `data/<scan>/` files. The
 analysis-only `import` workflow creates only
 `filtered_func_data_clean_smoothed.nii.gz`, `mask.nii.gz`, and `ica.nii.gz`,
 which are the files required by `analyze`.
+
+## Testing
+
+Tests do not require private imaging datasets. Filesystem tests use temporary
+placeholder files, numerical tests generate tiny synthetic images, and external
+workflow execution is mocked. No tests launch a GUI or run FSL/PyFIX processing.
+
+Run the complete suite, including checks that `melodic` and `fix` are on PATH:
+
+```bash
+uv run pytest -q
+```
+
+Run portable tests without requiring FSL/PyFIX executables on PATH:
+
+```bash
+uv run pytest -q -m "not environment"
+```
+
+Run only executable availability checks:
+
+```bash
+uv run pytest -q -m environment
+```
+
+Availability checks fail if an executable is missing; they do not verify its
+version or ability to process images. Bundled `ica.nii.gz` and
+`highres_pveseg.nii.gz` resources are checked for all three species using
+`importlib.resources`, independently of the source checkout location.
+
+Coverage also includes CLI help and path parsing, required scan files, training
+list validation, model copying, workflow dispatch, seed-workflow selection, and
+frame-censoring alignment. Useful future checks include installed-wheel template
+availability, supported external-tool versions, group-image affine mismatches,
+and optional end-to-end smoke tests using generated images in a configured FSL
+environment.

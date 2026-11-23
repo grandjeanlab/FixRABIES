@@ -247,15 +247,17 @@ def validate_analysis_image(image_file, image_type):
 
 
 def validate_seed_files(seed):
-    if not seed.get("apply", False):
-        return []
-
-    seed_files = seed.get("seeds", [])
-    if not seed_files:
-        raise ValueError("Seed analysis requires at least one seed image")
+    if not isinstance(seed, list):
+        raise TypeError("Seed images must be a list of paths")
+    if any(
+        not isinstance(seed_file, (str, Path)) or not str(seed_file).strip()
+        for seed_file in seed
+    ):
+        raise ValueError("Each seed image must be a non-empty path")
 
     return [
-        validate_analysis_image(seed_file, "Seed image") for seed_file in seed_files
+        validate_analysis_image(Path(seed_file).expanduser(), "Seed image")
+        for seed_file in seed
     ]
 
 
