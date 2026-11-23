@@ -280,20 +280,20 @@ or `-demean False` to disable either option.
 Scan-level outputs are written to `results/` by default; use
 `-result_dir PATH` to select another directory.
 
-Add seed-based analyses with a JSON list of seed masks:
+Add seed-based analyses with space-separated seed mask paths, without JSON,
+brackets, or commas:
 
 ```bash
 fixrabies analyze \
   -fix_dir /path/to/fixrabies \
-  -seed '[
-    "/path/to/acc.nii.gz",
-    "/path/to/thalamus.nii.gz"
-  ]'
+  -seed ~/templates/acc.nii.gz ./thalamus.nii.gz
 ```
 
-Seed paths must point to existing files. Relative paths and `~` are expanded
-and resolved to absolute paths. Omitting `-seed` or passing `-seed '[]'`
-disables seed analysis; a non-empty list enables it.
+Seed paths must point to existing files. Relative paths and `~/` are expanded
+and resolved to absolute paths. Quote individual paths if they contain spaces.
+Use `~/code/...`, not `~code/...`, which refers to another user's home directory.
+Omitting `-seed` or supplying it without paths disables seed analysis; supplying
+one or more paths enables it.
 
 ### Aggregate group analysis
 

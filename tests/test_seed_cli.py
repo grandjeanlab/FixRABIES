@@ -1,5 +1,4 @@
 import argparse
-import json
 from pathlib import Path
 
 import pytest
@@ -44,14 +43,14 @@ def seed_paths(tmp_path, monkeypatch):
     }
 
 
-def test_analyze_seed_json_array_resolves_paths(analyze_parser, tmp_path, seed_paths):
+def test_analyze_seed_paths_resolve(analyze_parser, tmp_path, seed_paths):
     args = analyze_parser.parse_args(
         [
             "analyze",
             "-fix_dir",
             str(tmp_path),
             "-seed",
-            json.dumps(seed_paths["values"]),
+            *seed_paths["values"],
         ]
     )
 
@@ -65,7 +64,7 @@ def test_analyze_seed_json_array_resolves_paths(analyze_parser, tmp_path, seed_p
 
 
 @pytest.mark.parametrize(
-    "seed_arguments", [[], ["-seed", "[]"]], ids=["default", "empty-array"]
+    "seed_arguments", [[], ["-seed"]], ids=["default", "empty-list"]
 )
 def test_analyze_seed_disabled(analyze_parser, tmp_path, seed_arguments):
     args = analyze_parser.parse_args(
@@ -77,31 +76,8 @@ def test_analyze_seed_disabled(analyze_parser, tmp_path, seed_arguments):
     assert validate_seed_files(args.seed) == []
 
 
-@pytest.mark.parametrize(
-    "value",
-    [
-        "{}",
-        '{"apply": true, "seeds": ["seed.nii.gz"]}',
-        '"seed.nii.gz"',
-        "null",
-        "true",
-        "42",
-        "[42]",
-        "[true]",
-        "[null]",
-        "[{}]",
-        "[[]]",
-        '[""]',
-        '["seed.nii.gz", ""]',
-        '["seed.nii.gz", 42]',
-        "not-json",
-        '["seed.nii.gz",]',
-        '["seed.nii.gz"',
-    ],
-)
-def test_analyze_seed_rejects_invalid_json_array(
-    analyze_parser, tmp_path, capsys, value
-):
+@pytest.mark.parametrize("value", ["", "   ", "\u0000"])
+def test_analyze_seed_rejects_invalid_paths(analyze_parser, tmp_path, capsys, value):
     with pytest.raises(SystemExit) as error:
         analyze_parser.parse_args(
             ["analyze", "-fix_dir", str(tmp_path), "-seed", value]
@@ -114,23 +90,22 @@ def test_analyze_seed_rejects_invalid_json_array(
     assert "Traceback" not in stderr
 
 
-def test_parse_path_list_helper_expands_and_resolves(seed_paths):
-    assert (
-        cli.parse_path_list(json.dumps(seed_paths["values"])) == seed_paths["resolved"]
-    )
-    assert cli.parse_path_list("[]") == []
+def test_parse_seed_path_expands_and_resolves(seed_paths):
+    assert [cli.parse_seed_path(value) for value in seed_paths["values"]] == seed_paths[
+        "resolved"
+    ]
 
 
-@pytest.mark.parametrize("value", ["not-json", "{}", "[null]", '[""]'])
-def test_parse_path_list_helper_raises_argument_type_error(value):
+@pytest.mark.parametrize("value", ["", "   ", "\u0000"])
+def test_parse_seed_path_raises_argument_type_error(value):
     with pytest.raises(argparse.ArgumentTypeError):
-        cli.parse_path_list(value)
+        cli.parse_seed_path(value)
 
 
 def test_analyze_seed_parser_does_not_require_existing_files(analyze_parser, tmp_path):
     missing = tmp_path / "missing.nii.gz"
     args = analyze_parser.parse_args(
-        ["analyze", "-fix_dir", str(tmp_path), "-seed", json.dumps([str(missing)])]
+        ["analyze", "-fix_dir", str(tmp_path), "-seed", str(missing)]
     )
 
     assert args.seed == [missing.resolve()]
@@ -177,9 +152,9 @@ def test_analyze_workflow_seed_branch_matches_cli_selection(
 ):
     arguments = ["analyze", "-fix_dir", str(tmp_path)]
     if seed_mode == "empty":
-        arguments.extend(["-seed", "[]"])
+        arguments.append("-seed")
     elif seed_mode == "nonempty":
-        arguments.extend(["-seed", json.dumps(seed_paths["values"])])
+        arguments.extend(["-seed", *seed_paths["values"]])
     args = analyze_parser.parse_args(arguments)
     seed_files = validate_seed_files(args.seed)
     scan_dir = tmp_path / "data" / "scan"

@@ -72,21 +72,13 @@ def absolute_path(value: str) -> Path:
     return Path(value).expanduser().resolve()
 
 
-def parse_path_list(value: str) -> list[Path]:
+def parse_seed_path(value: str) -> Path:
+    if not value.strip():
+        raise argparse.ArgumentTypeError("Each seed path must be non-empty")
     try:
-        paths = json.loads(value)
-    except json.JSONDecodeError as error:
-        raise argparse.ArgumentTypeError(
-            f"Invalid JSON path list: {error.msg}"
-        ) from error
-    if not isinstance(paths, list):
-        raise argparse.ArgumentTypeError("Expected a JSON list of paths")
-    if any(not isinstance(path, str) or not path.strip() for path in paths):
-        raise argparse.ArgumentTypeError("Each path must be a non-empty string")
-    try:
-        return [absolute_path(path) for path in paths]
+        return absolute_path(value)
     except (OSError, RuntimeError, ValueError) as error:
-        raise argparse.ArgumentTypeError(f"Invalid path: {error}") from error
+        raise argparse.ArgumentTypeError(f"Invalid seed path: {error}") from error
 
 
 # ==============================================================================
@@ -744,19 +736,18 @@ a species-specific atlas is used.
 
     seed.add_argument(
         "-seed",
-        type=parse_path_list,
-        metavar="JSON",
+        type=parse_seed_path,
+        nargs="*",
+        metavar="PATH",
         default=[],
         help="""
-Seed based analysis. An empty list disables seed analysis.
+Seed based analysis. Supply space-separated seed image paths.
+Omit -seed or supply no paths to disable seed analysis.
 Paths are expanded and resolved to absolute paths.
 
 Example:
 
--seed '[
-    "/path/to/acc.nii.gz",
-    "/path/to/thalamus.nii.gz"
-]'
+-seed ~/templates/acc.nii.gz ./thalamus.nii.gz
 """,
     )
 
