@@ -79,7 +79,12 @@
   verifies `<fix_model>.pyfix_model` was produced after training.
 - Use `importlib.resources` for package templates and PyFIX resource models;
   do not rely on source-tree or virtual-environment paths.
-- `tests/test_validate_inputs.py` intentionally exercises the existing
-  `~/test` fixture, including its prepared data and training set. Keep those
-  tests side-effect-free: mock external training and remove any temporary
-  model file created for output-validation checks.
+- Tests must not depend on `~/test`, private datasets, or source-tree template
+  paths. Use `tmp_path` for placeholder files or tiny generated images and
+  mock external training, workflow execution, and GUI entry points.
+- `tests/test_environment.py` checks `melodic` and `fix` on PATH without
+  executing them. Run only these checks with `uv run pytest -q -m environment`.
+  Run portable tests without external tools with
+  `uv run pytest -q -m "not environment"`.
+- Check bundled templates through `importlib.resources` so tests also work
+  against an installed package.
