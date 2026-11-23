@@ -68,6 +68,10 @@ def parse_boolean(value: str) -> bool:
     raise argparse.ArgumentTypeError(f"Expected True or False, got: {value}")
 
 
+def absolute_path(value: str) -> Path:
+    return Path(value).expanduser().resolve()
+
+
 # ==============================================================================
 # Lazy command dispatchers
 # ==============================================================================
@@ -144,7 +148,7 @@ def build_common_parser():
 
     common.add_argument(
         "-fix_dir",
-        type=Path,
+        type=absolute_path,
         required=True,
         metavar="PATH",
         help="""
@@ -234,7 +238,7 @@ ratSIGMA
     req.add_argument(
         "-preprocess_dir",
         required=True,
-        type=Path,
+        type=absolute_path,
         metavar="PATH",
         help="Root preprocessing directory.",
     )
@@ -678,7 +682,7 @@ def add_analyze_parser(subparsers, common):
 
     dr.add_argument(
         "-DR_template",
-        type=Path,
+        type=absolute_path,
         metavar="/path/to/template.nii.gz",
         help="""
 ICA atlas.
@@ -827,7 +831,7 @@ ratSIGMA
     req.add_argument(
         "-preprocess_dir",
         required=True,
-        type=Path,
+        type=absolute_path,
         metavar="PATH",
         help="Root preprocessing directory.",
     )
@@ -835,7 +839,7 @@ ratSIGMA
     req.add_argument(
         "-confound_dir",
         required=True,
-        type=Path,
+        type=absolute_path,
         metavar="PATH",
         help="Root confound_corrected directory.",
     )
